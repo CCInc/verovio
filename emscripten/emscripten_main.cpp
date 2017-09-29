@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#define _WIN32
 #include "toolkit.h"
 #include "vrv.h"
 

@@ -23,8 +23,8 @@
 use strict;
 use Getopt::Long;
 
-chomp (my $EMCC = `which emcc`);
-chomp (my $PYTHON = `which python`);
+chomp (my $EMCC = 'emcc');
+chomp (my $PYTHON = 'python');
 die "ERROR: emscripten compiler (emcc) not found.\n" unless $EMCC;
 die "ERROR: python interpreter not found.\n" unless $PYTHON;
 
@@ -132,14 +132,14 @@ $BUILD_DIR .= "/$VERSION" if $VERSION;
 
 print "Compiled files will be written to $BUILD_DIR\n";
 
-`mkdir -p $BUILD_DIR`;
-`mkdir -p $DATA_DIR`;
+`mkdir $BUILD_DIR`;
+`mkdir $DATA_DIR`;
 
 syncSvgResources($exclusion);
 
 # Generate the git commit file
 print "Creating commit version header file...\n";
-`$VEROVIO_ROOT/tools/get_git_commit.sh`;
+#`$VEROVIO_ROOT/tools/get_git_commit.sh`;
 
 my $VEROVIO_INCLUDE = "$VEROVIO_ROOT/include";
 my $VEROVIO_LIBMEI  = "$VEROVIO_ROOT/libmei";
@@ -154,7 +154,7 @@ $includes .= " -I$VEROVIO_INCLUDE/pugi";
 $includes .= " -I$VEROVIO_INCLUDE/utf8";
 $includes .= " -I$VEROVIO_LIBMEI";
 
-my $defines = "-DUSE_EMSCRIPTEN";
+my $defines = "-DUSE_EMSCRIPTEN -D_WINDOWS";
 $defines .= " -DNO_PAE_SUPPORT"      if $nopae;
 $defines .= " -DNO_DARMS_SUPPORT"    if $nodarms;
 $defines .= " -DNO_HUMDRUM_SUPPORT"  if $nohumdrum;
@@ -186,7 +186,7 @@ $exports .= "'_vrvToolkit_edit',";
 $exports .= "'_vrvToolkit_getElementAttr'";
 $exports .= "]\"";
 
-my $command = "$PYTHON $EMCC $CHATTY $includes $defines $FLAGS $sources $embed $exports $output";
+my $command = "$EMCC $CHATTY $includes $defines $FLAGS $sources $embed $exports $output";
 print "Compiling...";
 print "$command\n" if $CHATTY;
 `$command`;
@@ -194,12 +194,13 @@ print "$command\n" if $CHATTY;
 if ($? == 0) {
 	print " Done.\n";
 
+	my $finalBuildDir = '"D:\\Projects\\music\\Melody Measures\\Scripts\\scoreViewer"';
 	# the wrapper is necessary with closure 1 for avoiding to conflict with globals
-	`cat $BUILD_DIR/verovio.js verovio-proxy.js > $BUILD_DIR/$FILENAME`;
+	`type $BUILD_DIR\\verovio.js verovio-proxy.js > $finalBuildDir\\$FILENAME`;
 
 	# create a gzip version
-	`(cd $BUILD_DIR && gzip -c $FILENAME > $FILENAME.gz)`;
-	print "$BUILD_DIR/$FILENAME.gz was created\n";
+	#`(cd $BUILD_DIR && gzip -c $FILENAME > $FILENAME.gz)`;
+	#print "$BUILD_DIR/$FILENAME.gz was created\n";
 
 	# all good
 	print "$BUILD_DIR/$FILENAME was created\n";
@@ -263,13 +264,13 @@ sub syncSvgResources {
 	print "Syncing SVG resources...\n";
 
 	# First clear old contents of data directory
-	`rm -rf $DATA_DIR/*` if $DATA_DIR;
+	`del /S /q $DATA_DIR` if $DATA_DIR;
 
 	# Then copy data directory contents
-	`cp -r $VEROVIO_ROOT/data/* $DATA_DIR/`;
+	`robocopy /s "$VEROVIO_ROOT\\data" $DATA_DIR`;
 
 	# Remove .DS_Store from the data directory
-	`find $DATA_DIR/ -name '.DS_Store' -type f -delete`;
+	#`find $DATA_DIR/ -name '.DS_Store' -type f -delete`;
 
 	return unless $exclusion;
 	my @list = split /[^A-Za-z0-9_]+/, $exclusion;
@@ -278,7 +279,7 @@ sub syncSvgResources {
 		my @matches = glob "$DATA_DIR/$item*";
 		if (@matches) {
 			print "\tRemoving $item from embedded resources\n";
-			`rm -rf $DATA_DIR/$item*`;
+			`rd $DATA_DIR/$item*`;
 		}
 	}
 }

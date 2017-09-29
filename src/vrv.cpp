@@ -28,7 +28,7 @@
 //----------------------------------------------------------------------------
 
 // Windows has no Bourne shell (sh), therefore no "git_commit.h" is created.
-#ifndef _WIN32
+#ifndef _WINDOWS
 #include "git_commit.h"
 #else
 #define GIT_COMMIT "[undefined]"
