@@ -1,0 +1,13 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <CustomBuild Include="D:\Projects\music\Verovio\verovio\tools\CMakeFiles\014634655e6f29188004216eefa6d842\generate.stamp.rule">
+      <Filter>CMake Rules</Filter>
+    </CustomBuild>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="CMake Rules">
+      <UniqueIdentifier>{A44EAA11-013E-34DB-ABA4-EBAC7071F48E}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+</Project>
