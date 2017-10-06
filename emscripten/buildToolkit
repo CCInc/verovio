@@ -34,7 +34,7 @@ my $VEROVIO_ROOT  = "..";
 # Memory is increased (TOTAL_STACK) for processing large files (tested up to 7MB)
 # Empirically, the memory amount required is roughly 5 times the file size.
 # This can be disabled in the light version, which uses the default memory settings.
-my $FLAGS = "-O3";
+my $FLAGS = "-O0";
 $FLAGS .= " -DNDEBUG";
 $FLAGS .= " --memory-init-file 0";
 $FLAGS .= " -std=c++11";
@@ -42,6 +42,10 @@ $FLAGS .= " -s ASM_JS=1";
 $FLAGS .= " -s OUTLINING_LIMIT=10000";
 $FLAGS .= " -s TOTAL_MEMORY=192*1024*1024";
 $FLAGS .= " -s TOTAL_STACK=96*1024*1024";
+$FLAGS .= " -s DEMANGLE_SUPPORT=1";
+$FLAGS .= " -g3";
+$FLAGS .= " -Werror";
+$FLAGS .= " -s ASSERTIONS=2";
 
 my ($FLAGS_NAME, $VERSION, $CHATTY);
 
@@ -183,7 +187,8 @@ $exports .= "'_vrvToolkit_renderPage',";
 $exports .= "'_vrvToolkit_renderToMidi',";
 $exports .= "'_vrvToolkit_setOptions',";
 $exports .= "'_vrvToolkit_edit',";
-$exports .= "'_vrvToolkit_getElementAttr'";
+$exports .= "'_vrvToolkit_getElementAttr',";
+$exports .= "'_vrvToolkit_getKeySignature'";
 $exports .= "]\"";
 
 my $command = "$EMCC $CHATTY $includes $defines $FLAGS $sources $embed $exports $output";
@@ -194,9 +199,12 @@ print "$command\n" if $CHATTY;
 if ($? == 0) {
 	print " Done.\n";
 
-	my $finalBuildDir = '"D:\\Projects\\music\\Melody Measures\\Scripts\\scoreViewer"';
+	my $finalBuildDir = 'D:\\Projects\\music\\Melody Measures\\Scripts\\scoreViewer';
 	# the wrapper is necessary with closure 1 for avoiding to conflict with globals
-	`type $BUILD_DIR\\verovio.js verovio-proxy.js > $finalBuildDir\\$FILENAME`;
+	#`type $BUILD_DIR\\verovio.js verovio-proxy.js > $finalBuildDir\\$FILENAME`;
+	print `robocopy "$BUILD_DIR" "$finalBuildDir" verovio.js`;
+	print `robocopy . "$finalBuildDir" verovio-proxy.js`;
+	print `robocopy "$BUILD_DIR" "$finalBuildDir" verovio.js.map`;
 
 	# create a gzip version
 	#`(cd $BUILD_DIR && gzip -c $FILENAME > $FILENAME.gz)`;
