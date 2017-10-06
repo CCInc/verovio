@@ -26,6 +26,7 @@
 #include "slur.h"
 #include "style.h"
 #include "svgdevicecontext.h"
+#include "transpose.h"
 #include "vrv.h"
 
 #include "functorparams.h"
@@ -739,6 +740,12 @@ bool Toolkit::Edit(const std::string &json_editorAction)
                 return this->Set(elementId, attrType, attrValue);
             }
         }
+        else if (json.get<jsonxx::String>("action") == "transposeToKey") {
+            int newFifths;
+            if (this->ParseTransposeKeyAction(json.get<jsonxx::Object>("param"), &newFifths)) {
+                return this->TransposeKey(newFifths);
+            }
+        }
     }
     LogError("Does not understand action.");
     return false;
@@ -923,6 +930,38 @@ std::string Toolkit::GetElementsAtTime(int millisec)
         o << "notes" << a;
         o << "page" << pageNo;
     }
+    return o.json();
+#else
+    // The non-js version of the app should not use this function.
+    return "";
+#endif
+}
+
+std::string Toolkit::GetKeySignature(int n)
+{
+#if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
+    jsonxx::Object o;
+    jsonxx::Array a;
+
+	StaffDef *staffDef = m_doc.m_scoreDef.GetStaffDef(n);
+	assert(staffDef);
+	
+	if (staffDef->HasKeySigInfo())
+	{
+		KeySig *keySig = staffDef->GetKeySigCopy();
+		int keySigLog = keySig->ConvertToKeySigLog();
+
+		char alt = keySig->GetAlterationNumber();
+		int altType = keySig->GetAlterationType();
+		int fifths = keySigLog - KEYSIGNATURE_0;
+		//int keySigLog = keySigLog;
+
+		//o << "keySigLog" << Att::KeysignatureToStr(keySigLog);
+		o << "fifths" << fifths;
+		o << "keySigLog" << keySigLog;
+		o << "GetAlterationNumber()" << alt;
+		o << "GetAlterationType()" << altType;
+	}
     return o.json();
 #else
     // The non-js version of the app should not use this function.
@@ -1136,6 +1175,59 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
     return false;
 }
 
+bool Toolkit::TransposeKey(int newFifths)
+{
+   // if (!m_doc.GetDrawingPage()) return false;
+ //   Object *element = m_doc.GetDrawingPage()->FindChildByUuid(elementId);
+
+	//StaffGrp *staffGrp = dynamic_cast<StaffGrp *>(scoreDef->FindChildByType(STAFFGRP));
+	//if (!staffGrp) {
+	//	return;
+	//}
+
+
+	vrv::Transpose::transpose(&m_doc, newFifths);
+	//ScoreDef scoreDef = m_doc.m_scoreDef;
+	//ArrayOfObjects *staffDefs = scoreDef.FindAllChildByType(STAFFDEF);
+
+	//ArrayOfObjects::iterator iter;
+	//for (iter = staffDefs.begin(); iter != staffDefs.end(); iter++) {
+	//	StaffDef *staffDef = dynamic_cast<StaffDef *>(*iter);
+	//	assert(staffDef);
+
+	//	if (clef->GetShape() != CLEFSHAPE_perc && clef->GetShape() != CLEFSHAPE_TAB)
+	//	{
+	//		KeySig *keySig = staffDef->GetKeySigCopy();
+	//		int keySigLog = keySig->ConvertToKeySigLog();
+
+	//		int oldFifths = keySigLog - KEYSIGNATURE_0;
+	//	}
+	//}
+
+	//if (staffDef->HasKeySigInfo())
+	//{
+	//	KeySig *keySig = staffDef->GetKeySigCopy();
+	//	int keySigLog = keySig->ConvertToKeySigLog();
+
+	//	int oldFifths = keySigLog - KEYSIGNATURE_0;
+
+
+
+	//	if (chromatic != 0 || diatonic != 0)
+	//	{
+	//		ArrayOfObjects *notes = m_doc.FindAllChildByType(NOTE);
+
+	//		Set("oct");
+	//		Set("pname");
+	//		Set("accid.ges");
+	//	}
+
+
+	//	Set()
+	//}
+    return true;
+}
+
 #ifdef USE_EMSCRIPTEN
 bool Toolkit::ParseDragAction(jsonxx::Object param, std::string *elementId, int *x, int *y)
 {
@@ -1169,6 +1261,14 @@ bool Toolkit::ParseSetAction(
     (*attrType) = param.get<jsonxx::String>("attrType");
     if (!param.has<jsonxx::String>("attrValue")) return false;
     (*attrValue) = param.get<jsonxx::String>("attrValue");
+    return true;
+}
+
+bool Toolkit::ParseTransposeKeyAction(
+    jsonxx::Object param, int *newFifths)
+{
+    if (!param.has<jsonxx::Number>("newFifths")) return false;
+    (*newFifths) = param.get<jsonxx::Number>("newFifths");
     return true;
 }
 #endif

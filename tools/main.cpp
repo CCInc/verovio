@@ -21,6 +21,7 @@
 
 #include "style.h"
 #include "toolkit.h"
+#include "transpose.h"
 #include "vrv.h"
 
 using namespace std;
@@ -413,6 +414,10 @@ int main(int argc, char **argv)
             exit(1);
         }
     }
+
+	/// INSERT DEBUG CODE HERE
+	toolkit.TransposeKey(0);
+	//vrv::Transpose::transpose(&m_doc, newFifths);
 
     int from = page;
     int to = page + 1;

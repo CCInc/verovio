@@ -131,6 +131,11 @@ public:
     std::string GetElementsAtTime(int millisec);
 
     /**
+     * Returns key signature from scoreDefs.
+     */
+    std::string GetKeySignature(int staffNo);
+
+    /**
      * Get the MEI as a string.
      * Get all the pages unless a page number (1-based) is specified
      */
@@ -376,6 +381,7 @@ public:
     bool Drag(std::string elementId, int x, int y);
     bool Insert(std::string elementType, std::string startId, std::string endId);
     bool Set(std::string elementId, std::string attrType, std::string attrValue);
+	bool TransposeKey(int newFifths);
     ///@}
 
 private:
@@ -390,7 +396,8 @@ protected:
     ///@{
     bool ParseDragAction(jsonxx::Object param, std::string *elementId, int *x, int *y);
     bool ParseInsertAction(jsonxx::Object param, std::string *elementType, std::string *startid, std::string *endid);
-    bool ParseSetAction(jsonxx::Object param, std::string *elementId, std::string *attrType, std::string *attrValue);
+    bool ParseSetAction(jsonxx::Object param, std::string *elementId, std::string *attrType, std::string *attrValue); 
+	bool ParseTransposeKeyAction(jsonxx::Object param, int *newFifths);
 ///@}
 #endif
 

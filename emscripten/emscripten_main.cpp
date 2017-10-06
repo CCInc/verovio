@@ -144,4 +144,10 @@ const char *vrvToolkit_getElementAttr(Toolkit *tk, const char *xmlId)
     tk->SetCString(tk->GetElementAttr(xmlId));
     return tk->GetCString();
 }
+
+const char *vrvToolkit_getKeySignature(Toolkit *tk, int n)
+{
+	tk->SetCString(tk->GetKeySignature(n));
+	return tk->GetCString();
+}
 }

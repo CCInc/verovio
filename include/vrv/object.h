@@ -333,6 +333,12 @@ public:
     Object *FindChildByType(ClassId classId, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
 
     /**
+     * Look for all children with the specified type (returns NULL if not found)
+     * This method is a wrapper for the Object::FindByType functor.
+     */
+	ArrayOfObjects FindAllChildByType(ClassId classId, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
+
+    /**
      * Return the first element matching the AttComparison functor
      * Deepness allow to limit the depth search (EditorialElements are not count)
      */
