@@ -116,40 +116,6 @@ namespace vrv {
 			Clef *clef = staffDef->GetCurrentClef();
 			if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
 
-
-			//ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
-			//for (element = staff->GetFirst(); element; element = staff->GetNext()) {
-			//	if (element->Is(NOTE)) {
-			//		Note *note = dynamic_cast<Note *>(element);
-
-			//		int pitch = note->GetPname() + interval.GetChromatic();
-			//		int oct = note->GetOct();
-
-			//		note->AdjustPname(pitch, oct);
-			//		note->SetPname(static_cast<data_PITCHNAME>(pitch));
-			//		note->SetOct(oct);
-			//	}
-			//	else if (element->Is(CHORD)) {
-			//		
-			//	}
-			//	else if (element->Is(KEYSIG)) {
-
-			//	}
-			//}
-
-			//ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
-
-			//for (iter = notes.begin(); iter != notes.end(); iter++) {
-			//	Note *note = dynamic_cast<Note *>(*iter);
-
-			//	int pitch = note->GetPname() + interval.GetChromatic();
-			//	int oct = note->GetOct();
-
-			//	note->AdjustPname(pitch, oct);
-			//	note->SetPname(static_cast<data_PITCHNAME>(pitch));
-			//	note->SetOct(oct);
-			//}
-
 			ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
 			ArrayOfObjects::iterator notesIter;
 			for (notesIter = notes.begin(); notesIter != notes.end(); notesIter++) {
@@ -158,31 +124,9 @@ namespace vrv {
 				int steps = note->GetPname();
 				int oct = note->GetOct();
 
-				//int currentPitch = PitchFromPname(note->GetPname()) + AccIdToAlter(note->GetDrawingAccid());
-				//int newPitch = currentPitch + interval.GetChromatic();
 
-				//int currentStep = note->GetPname();
-				//int newStep = currentStep + interval.GetDiatonic();
 
-				//note->AdjustPname(newStep, oct);
-				//int alteration = newPitch - PitchFromPname(static_cast<data_PITCHNAME>(newStep));
 
-				//while (alteration > 2) {
-				//	newStep = ((newStep + 1) % 7);
-				//	alteration = newPitch - PitchFromPname(static_cast<data_PITCHNAME>(newStep));
-				//};
-				//while (alteration < -(2)) {
-				//	newStep = (((newStep + 7) - 1) % 7);
-				//	alteration = newPitch - PitchFromPname(static_cast<data_PITCHNAME>(newStep));
-				//};
-
-				//Accid *accid = note->GetDrawingAccid();
-				//int midiBase;
-				//data_PITCHNAME pname = note->GetPname();
-
-				//int origSteps = note->GetPname();
-				//int alter = AccIdToAlter(note->GetDrawingAccid());
-				//transposeTpc(origSteps, alter, interval, false);
 				int currentStep = note->GetPname();
 				int tpc = step2tpc(currentStep - 1, AccIdToAlter(note->GetDrawingAccid()));
 				int newStep = currentStep - 1, newAlter = AccIdToAlter(note->GetDrawingAccid()), newOct = 0;
@@ -205,26 +149,11 @@ namespace vrv {
 				note->SetOct(oct + newOct);
 			}
 
-			//m_doc->CollectScoreDefs();
-			//StaffDef *upcomingStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
-			//assert(upcomingStaffDef);
-			//upcomingStaffDef->SetKeySig(KEYSIGNATURE_6s);
-			//upcomingStaffDef->SetCurrentKeySig(new KeySig());
-			//m_doc->m_scoreDef.SetRedrawFlags(false, true, false, false, false);
-			//m_doc->m_scoreDef.ReplaceDrawingValues(upcomingStaffDef);
-
 			if (staffDef->HasKeySig())
 			{
 				data_KEYSIGNATURE keySig = staffDef->GetKeySig();
 
 				int keySigLog = newFifths + KEYSIGNATURE_0;
-
-				//if (keySigLog < KEYSIGNATURE_7f) {
-				//	keySigLog = keySigLog + 7;
-				//}
-				//else if (keySigLog > KEYSIGNATURE_7s) {
-				//	keySigLog = keySigLog - 7;
-				//}
 
 				StaffDef *updatedStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
 				updatedStaffDef->SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
@@ -342,67 +271,7 @@ namespace vrv {
 		};
 		return pitches[tpc + 1];
 	}
-	/*
-	void vrv::Transpose::transposeTpc(int &origStep, int &accAlter, vrv::Transpose::Interval interval, bool useDoubleSharpsFlats)
-	{
-		int minAlter;
-		int maxAlter;
-		if (useDoubleSharpsFlats) {
-			minAlter = -2;
-			maxAlter = 2;
-		}
-		else {
-			minAlter = -1;
-			maxAlter = 1;
-		}
-		int steps = interval.GetDiatonic();
-		int semitones = interval.GetChromatic();
 
-		if (semitones == 0 && steps == 0)
-			return;
-
-		int step;
-		int alter;
-		int pitch = PitchFromPname(static_cast<data_PITCHNAME>(origStep)) + accAlter;
-		//static int pitches[] = {
-		//		0,2,4,5,7,9,11
-		//};
-		//int pitch = pitches[origStep - 1] + accAlter;
-		for (int k = 0; k < 10; ++k) {
-
-
-
-			step = (origStep - 1) + steps;
-			while (step < 0)
-				step += 7;
-			step %= 7;
-			int p1 = PitchFromPname(static_cast<data_PITCHNAME>(step));
-			alter = semitones - (p1 - pitch);
-			// alter  = p1 + semitones - pitch;
-
-			//            if (alter < 0) {
-			//                  alter *= -1;
-			//                  alter = 12 - alter;
-			//                  }
-			while (alter < 0)
-				alter += 12;
-
-			alter %= 12;
-			if (alter > 6)
-				alter -= 12;
-			if (alter > maxAlter)
-				++steps;
-			else if (alter < minAlter)
-				--steps;
-			else
-				break;
-			//            qDebug("  again alter %d steps %d, step %d", alter, steps, step);
-		}
-		//      qDebug("  = step %d alter %d  tpc %d", step, alter, step2tpc(step, alter));
-		origStep = step;
-		accAlter = alter;
-	}
-	*/
 	void vrv::Transpose::transposeTpc(int tpc, vrv::Transpose::Interval interval, bool useDoubleSharpsFlats, int& step, int& alter, int& oct)
 	{
 		int minAlter;

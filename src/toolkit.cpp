@@ -1177,54 +1177,7 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
 
 bool Toolkit::TransposeKey(int newFifths)
 {
-   // if (!m_doc.GetDrawingPage()) return false;
- //   Object *element = m_doc.GetDrawingPage()->FindChildByUuid(elementId);
-
-	//StaffGrp *staffGrp = dynamic_cast<StaffGrp *>(scoreDef->FindChildByType(STAFFGRP));
-	//if (!staffGrp) {
-	//	return;
-	//}
-
-
 	vrv::Transpose::transpose(&m_doc, newFifths);
-	//ScoreDef scoreDef = m_doc.m_scoreDef;
-	//ArrayOfObjects *staffDefs = scoreDef.FindAllChildByType(STAFFDEF);
-
-	//ArrayOfObjects::iterator iter;
-	//for (iter = staffDefs.begin(); iter != staffDefs.end(); iter++) {
-	//	StaffDef *staffDef = dynamic_cast<StaffDef *>(*iter);
-	//	assert(staffDef);
-
-	//	if (clef->GetShape() != CLEFSHAPE_perc && clef->GetShape() != CLEFSHAPE_TAB)
-	//	{
-	//		KeySig *keySig = staffDef->GetKeySigCopy();
-	//		int keySigLog = keySig->ConvertToKeySigLog();
-
-	//		int oldFifths = keySigLog - KEYSIGNATURE_0;
-	//	}
-	//}
-
-	//if (staffDef->HasKeySigInfo())
-	//{
-	//	KeySig *keySig = staffDef->GetKeySigCopy();
-	//	int keySigLog = keySig->ConvertToKeySigLog();
-
-	//	int oldFifths = keySigLog - KEYSIGNATURE_0;
-
-
-
-	//	if (chromatic != 0 || diatonic != 0)
-	//	{
-	//		ArrayOfObjects *notes = m_doc.FindAllChildByType(NOTE);
-
-	//		Set("oct");
-	//		Set("pname");
-	//		Set("accid.ges");
-	//	}
-
-
-	//	Set()
-	//}
     return true;
 }
 
