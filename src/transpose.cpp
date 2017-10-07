@@ -36,6 +36,11 @@ namespace vrv {
 		chromatic = -chromatic;
 	}
 
+	vrv::Transpose::Transpose(Doc *doc)
+	{
+		m_doc = doc;
+	}
+
 	//---------------------------------------------------------
 	//   keydiff2Interval
 	//    keysig -   -7(Cb) - +7(C#)
@@ -72,11 +77,8 @@ namespace vrv {
 		return vrv::Transpose::Interval(diatonic, chromatic);
 	}
 
-	bool vrv::Transpose::transpose(Doc *m_doc, int newFifths)
+	int vrv::Transpose::GetFirstKeySigFifths(Doc *m_doc)
 	{
-		// Transpose by key
-
-		// Find the first key signature from the pitched staves
 		int oldFifths = 0;
 
 		Measure firstMeasure = m_doc->FindChildByType(MEASURE);
@@ -101,7 +103,15 @@ namespace vrv {
 				break;
 			}
 		}
+		return oldFifths;
+	}
 
+	bool vrv::Transpose::transpose(int newFifths)
+	{
+		// Transpose by key
+
+		// Find the first key signature from the pitched staves
+		int oldFifths = GetFirstKeySigFifths(m_doc);
 		Interval interval = keydiff2Interval(oldFifths, newFifths);
 
 		ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
@@ -113,6 +123,7 @@ namespace vrv {
 			StaffDef *staffDef = staff->m_drawingStaffDef;
 			assert(staffDef);
 
+			// skip perc. clefs
 			Clef *clef = staffDef->GetCurrentClef();
 			if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
 
@@ -121,18 +132,35 @@ namespace vrv {
 			for (notesIter = notes.begin(); notesIter != notes.end(); notesIter++) {
 				Note *note = dynamic_cast<Note *>(*notesIter);
 
-				int steps = note->GetPname();
+				data_PITCHNAME steps = note->GetPname();
 				int oct = note->GetOct();
-
-
-
+				int pitchNumber = (PitchFromPname(steps) + AccIdToAlter(note->GetDrawingAccid())) + (oct * 12);
+				pitchNumber += interval.GetChromatic();
 
 				int currentStep = note->GetPname();
 				int tpc = step2tpc(currentStep - 1, AccIdToAlter(note->GetDrawingAccid()));
-				int newStep = currentStep - 1, newAlter = AccIdToAlter(note->GetDrawingAccid()), newOct = 0;
-				transposeTpc(tpc, interval, false, newStep, newAlter, newOct);
+				int newStep = currentStep - 1, newAlter = AccIdToAlter(note->GetDrawingAccid());
+				transposeTpc(tpc, interval, false, newStep, newAlter);
 
-				note->SetPname(static_cast<data_PITCHNAME>(newStep + 1));
+				data_PITCHNAME newPname = static_cast<data_PITCHNAME>((newStep%7) + 1);
+
+				int newOct = 0;
+				int newPitchNumber = (PitchFromPname(newPname) + newAlter);
+				while (newPitchNumber < 0)
+				{
+					newPitchNumber += 12;
+					newOct++;
+				}
+				if (newPitchNumber % 12 != pitchNumber % 12)
+				assert(newPitchNumber % 12 == pitchNumber % 12);
+
+				while (newPitchNumber != pitchNumber)
+				{
+					newPitchNumber += 12;
+					newOct++;
+				}
+
+				note->SetPname(newPname);
 
 				Accid *accid = note->GetDrawingAccid();
 				if (accid)
@@ -146,7 +174,7 @@ namespace vrv {
 					note->AddChild(accid);
 				}
 
-				note->SetOct(oct + newOct);
+				note->SetOct(newOct);
 			}
 
 			if (staffDef->HasKeySig())
@@ -272,7 +300,7 @@ namespace vrv {
 		return pitches[tpc + 1];
 	}
 
-	void vrv::Transpose::transposeTpc(int tpc, vrv::Transpose::Interval interval, bool useDoubleSharpsFlats, int& step, int& alter, int& oct)
+	void vrv::Transpose::transposeTpc(int tpc, vrv::Transpose::Interval interval, bool useDoubleSharpsFlats, int& step, int& alter)
 	{
 		int minAlter;
 		int maxAlter;
@@ -296,15 +324,8 @@ namespace vrv {
 		for (int k = 0; k < 10; ++k) {
 			step = tpc2step(tpc) + steps;
 			while (step < 0)
-			{
 				step += 7;
-				oct--;
-			}
-			while (step > 7)
-			{
-				step -= 7;
-				oct++;
-			}
+			step %= 7;
 			int p1 = tpc2pitch(step2tpc(step, 0));
 			alter = semitones - (p1 - pitch);
 			// alter  = p1 + semitones - pitch;

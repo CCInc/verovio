@@ -26,7 +26,6 @@
 #include "slur.h"
 #include "style.h"
 #include "svgdevicecontext.h"
-#include "transpose.h"
 #include "vrv.h"
 
 #include "functorparams.h"
@@ -557,6 +556,7 @@ bool Toolkit::LoadData(const std::string &data)
 
     delete input;
     m_view.SetDoc(&m_doc);
+	m_transpose = new Transpose(&m_doc);
 
     return true;
 }
@@ -1177,8 +1177,7 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
 
 bool Toolkit::TransposeKey(int newFifths)
 {
-	vrv::Transpose::transpose(&m_doc, newFifths);
-    return true;
+	return m_transpose->transpose(newFifths);
 }
 
 #ifdef USE_EMSCRIPTEN

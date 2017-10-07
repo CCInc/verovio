@@ -14,6 +14,7 @@
 
 #include "doc.h"
 #include "view.h"
+#include "transpose.h"
 
 //----------------------------------------------------------------------------
 
@@ -407,6 +408,7 @@ private:
     Doc m_doc;
     View m_view;
     int m_scale;
+	Transpose *m_transpose;
     FileFormat m_format;
     FileFormat m_outformat;
 
