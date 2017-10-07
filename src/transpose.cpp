@@ -39,13 +39,14 @@ namespace vrv {
 	vrv::Transpose::Transpose(Doc *doc)
 	{
 		m_doc = doc;
+		chromaticHistory = GetFirstKeySigFifths(m_doc);
 	}
 
 	//---------------------------------------------------------
 	//   keydiff2Interval
 	//    keysig -   -7(Cb) - +7(C#)
 	//---------------------------------------------------------
-	vrv::Transpose::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int newFifths)
+	vrv::Transpose::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int newFifths, TransposeDirection dir)
 	{
 		static int stepTable[15] = {
 			// C  G  D  A  E  B Fis
@@ -64,8 +65,19 @@ namespace vrv {
 		diatonic %= 7;
 		int chromatic = (cofSteps * 7) % 12;
 
+		if (dir == TransposeDirection::CLOSEST)
+		{
+			if (chromaticHistory + chromatic > 6)
+			{
+				dir = TransposeDirection::DOWN;
+			}
+			else if (chromaticHistory + chromatic < -6)
+			{
+				dir = TransposeDirection::UP;
+			}
+		}
 
-		if (chromatic > 6) {
+		if (dir == TransposeDirection::DOWN) {
 			chromatic = chromatic - 12;
 			diatonic = diatonic - 7;
 			if (diatonic == -7)
@@ -73,6 +85,18 @@ namespace vrv {
 			if (chromatic == -12)
 				chromatic = 0;
 		}
+		if (dir == TransposeDirection::UP) {
+			chromatic = chromatic + 12;
+			diatonic = diatonic + 7;
+			if (diatonic == 7)
+				diatonic = 0;
+			if (chromatic == 12)
+				chromatic = 0;
+		}
+		if (abs(chromaticHistory + chromatic) > 6)
+			assert(abs(chromaticHistory + chromatic) <= 6);
+
+		chromaticHistory += chromatic;
 
 		return vrv::Transpose::Interval(diatonic, chromatic);
 	}

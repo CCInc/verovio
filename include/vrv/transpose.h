@@ -26,6 +26,10 @@ namespace vrv {
 			signed char chromatic;
 		};
 
+		enum class TransposeDirection : char {
+			NONE = -1, UP, DOWN, CLOSEST
+		};
+
 	public:
 		Transpose(Doc *doc);
 		bool transpose(int newFifths);
@@ -40,6 +44,7 @@ namespace vrv {
 		static int step2tpc(int step, int alter);
 		static int tpc2pitch(int tpc);
 
+		int chromaticHistory;
 		Doc *m_doc;
 	};
 }
