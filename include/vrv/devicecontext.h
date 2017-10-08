@@ -66,7 +66,7 @@ public:
     void ResetPen();
     void ResetFont();
     virtual void SetBackground(int colour, int style = AxSOLID) = 0;
-    virtual void SetBackgroundImage(void *image, double opacity = 1.0) = 0;
+    virtual void SetBackgroundImage(std::string data, double opacity = 1.0) = 0;
     virtual void SetBackgroundMode(int mode) = 0;
     virtual void SetTextForeground(int colour) = 0;
     virtual void SetTextBackground(int colour) = 0;

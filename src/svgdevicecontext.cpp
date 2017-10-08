@@ -394,8 +394,10 @@ void SvgDeviceContext::SetBackground(int colour, int style)
     // nothing to do, we do not handle Background
 }
 
-void SvgDeviceContext::SetBackgroundImage(void *image, double opacity)
+void SvgDeviceContext::SetBackgroundImage(std::string data, double opacity)
 {
+	m_backgroundData = data;
+	m_backgroundOpacity = opacity;
 }
 
 void SvgDeviceContext::SetBackgroundMode(int mode)
@@ -771,6 +773,13 @@ void SvgDeviceContext::DrawSpline(int n, Point points[])
 
 void SvgDeviceContext::DrawBackgroundImage(int x, int y)
 {
+	pugi::xml_node imgChild = AppendChild("image");
+	imgChild.append_attribute("x") = x;
+	imgChild.append_attribute("y") = y;
+	imgChild.append_attribute("height") = "100%";
+	imgChild.append_attribute("width") = "100%";
+	imgChild.append_attribute("xlink:href") = m_backgroundData.c_str();
+	imgChild.append_attribute("opacity") = m_backgroundOpacity;
 }
 
 std::string SvgDeviceContext::GetColour(int colour)

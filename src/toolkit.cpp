@@ -66,6 +66,7 @@ Toolkit::Toolkit(bool initFont)
     m_evenNoteSpacing = false;
     m_showBoundingBoxes = false;
     m_scoreBasedMei = false;
+	m_backgroundOpacity = 1.0;
 
     m_cString = NULL;
     m_humdrumBuffer = NULL;
@@ -91,6 +92,24 @@ bool Toolkit::SetResourcePath(const std::string &path)
 {
     Resources::SetPath(path);
     return Resources::InitFonts();
+};
+
+bool Toolkit::SetBackgroundData(const std::string data)
+{
+	m_backgroundData = data;
+	return true;
+};
+
+bool Toolkit::SetBackgroundOpacity(float opacity)
+{
+	if (opacity < 0 || opacity > 1.0) {
+		LogError("Opacity out of bounds; default is %d, minimum is %d, and maximum is %d", 1.0,
+			0.0, 1.0);
+		return false;
+	}
+
+	m_backgroundOpacity = opacity;
+	return true;
 };
 
 bool Toolkit::SetBorder(int border)
@@ -598,6 +617,10 @@ bool Toolkit::ParseOptions(const std::string &json_options)
 
     if (json.has<jsonxx::Number>("scale")) SetScale(json.get<jsonxx::Number>("scale"));
 
+	if (json.has<jsonxx::Number>("backgroundOpacity")) SetBackgroundOpacity(json.get<jsonxx::Number>("backgroundOpacity"));
+
+	if (json.has<jsonxx::String>("backgroundData")) SetBackgroundData(json.get<jsonxx::String>("backgroundData"));
+
     if (json.has<jsonxx::Number>("border")) SetBorder(json.get<jsonxx::Number>("border"));
 
     if (json.has<jsonxx::String>("font")) SetFont(json.get<jsonxx::String>("font"));
@@ -837,6 +860,8 @@ std::string Toolkit::RenderToSvg(int pageNo, bool xml_declaration)
 
     // debug BB?
     svg.SetDrawBoundingBoxes(m_showBoundingBoxes);
+
+	svg.SetBackgroundImage(m_backgroundData, m_backgroundOpacity);
 
     // render the page
     m_view.DrawCurrentPage(&svg, false);

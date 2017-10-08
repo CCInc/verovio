@@ -51,7 +51,7 @@ public:
      */
     ///@{
     virtual void SetBackground(int colour, int style = AxSOLID);
-    virtual void SetBackgroundImage(void *image, double opacity = 1.0){};
+    virtual void SetBackgroundImage(std::string data, double opacity = 1.0){};
     virtual void SetBackgroundMode(int mode);
     virtual void SetTextForeground(int colour);
     virtual void SetTextBackground(int colour);

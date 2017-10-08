@@ -50,7 +50,7 @@ public:
      */
     ///@{
     virtual void SetBackground(int colour, int style = AxSOLID);
-    virtual void SetBackgroundImage(void *image, double opacity = 1.0);
+    virtual void SetBackgroundImage(std::string data, double opacity = 1.0);
     virtual void SetBackgroundMode(int mode);
     virtual void SetTextForeground(int colour);
     virtual void SetTextBackground(int colour);
@@ -191,6 +191,9 @@ private:
     int m_width, m_height;
     int m_originX, m_originY;
     double m_userScaleX, m_userScaleY;
+
+	std::string m_backgroundData;
+	int m_backgroundOpacity;
 
     // holds the list of glyphs from the smufl font used so far
     // they will be added at the end of the file as <defs>

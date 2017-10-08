@@ -201,6 +201,21 @@ public:
     int GetScale() { return m_scale; }
     ///@}
 
+	/**
+	* @name Set and get the page background; either a base64 encoded image or a url
+	*/
+	///@{
+	bool SetBackgroundData(const std::string data);
+	///@}
+
+	/**
+	* @name Set and get the page background opacity
+	*/
+	///@{
+	bool SetBackgroundOpacity(float opacity);
+	float GetBackgroundOpacity() { return m_backgroundOpacity; }
+	///@}
+
     /**
      * @name Set and get the page height (in pixels)
      */
@@ -418,6 +433,8 @@ private:
     /** given in units **/
     int m_spacingStaff;
     int m_spacingSystem;
+	std::string m_backgroundData;
+	float m_backgroundOpacity;
 
     bool m_noLayout;
     bool m_ignoreLayout;
