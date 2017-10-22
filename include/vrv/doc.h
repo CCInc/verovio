@@ -316,6 +316,10 @@ public:
      * A copy of the header tree stored as pugi::xml_document
      */
     pugi::xml_document m_header;
+	std::string m_title;
+	std::string m_subtitle;
+	std::string m_composer;
+	std::string m_arrangement;
 
     /**
      * Holds the top scoreDef.
@@ -333,6 +337,8 @@ public:
     int m_drawingPageRightMar;
     /** The current page right margin */
     int m_drawingPageTopMar;
+	/** The height of the current page's header */
+	int m_drawingPageHeaderHeight;
     /** the current beam minimal slope */
     float m_drawingBeamMinSlope;
     /** the current beam maximal slope */

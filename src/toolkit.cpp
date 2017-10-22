@@ -201,6 +201,18 @@ bool Toolkit::SetSpacingNonLinear(float spacingNonLinear)
     return true;
 }
 
+void Toolkit::SetHeader(std::string title, std::string subtitle, std::string composer, std::string arrangement)
+{
+	m_doc.m_title = title;
+	m_doc.m_subtitle = subtitle;
+	m_doc.m_composer = composer;
+	m_doc.m_arrangement = arrangement;
+
+	// Have to re-cast off the doc so that there is no system overflow due to the new header
+	m_doc.UnCastOffDoc();
+	m_doc.CastOffDoc();
+}
+
 bool Toolkit::SetOutputFormat(std::string const &outformat)
 {
     if (outformat == "humdrum") {
@@ -637,6 +649,8 @@ bool Toolkit::ParseOptions(const std::string &json_options)
 
     if (json.has<jsonxx::Number>("spacingSystem")) SetSpacingSystem(json.get<jsonxx::Number>("spacingSystem"));
 
+	if (json.has<jsonxx::Object>("header")) ParseHeader(json.get<jsonxx::Object>("header"));
+
     if (json.has<jsonxx::String>("appXPathQuery")) {
         std::vector<std::string> queries = { json.get<jsonxx::String>("appXPathQuery") };
         SetAppXPathQueries(queries);
@@ -726,6 +740,25 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
     return "";
 #endif
 }
+
+
+#if defined(USE_EMSCRIPTEN)
+void Toolkit::ParseHeader(jsonxx::Object header)
+{
+	std::string title, subtitle, composer, arrangement;
+
+	if (param.has<jsonxx::String>("title"))
+		title = param.get<jsonxx::String>("title");
+	if (param.has<jsonxx::String>("subtitle"))
+		subtitle = param.get<jsonxx::String>("subtitle");
+	if (param.has<jsonxx::String>("composer"))
+		composer = param.get<jsonxx::String>("composer");
+	if (param.has<jsonxx::String>("arrangement"))
+		arrangement = param.get<jsonxx::String>("arrangement");	
+
+	SetHeader(title, subtitle, composer, arrangement);
+}
+#endif
 
 bool Toolkit::Edit(const std::string &json_editorAction)
 {

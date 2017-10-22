@@ -308,6 +308,8 @@ public:
     int GetNoJustification() { return m_noJustification; }
     ///@}
 
+	void SetHeader(std::string title, std::string subtitle, std::string composer, std::string arrangement);
+
     /**
      * @name Do not justify the system (for debugging purposes)
      */
@@ -414,6 +416,8 @@ protected:
     bool ParseInsertAction(jsonxx::Object param, std::string *elementType, std::string *startid, std::string *endid);
     bool ParseSetAction(jsonxx::Object param, std::string *elementId, std::string *attrType, std::string *attrValue); 
 	bool ParseTransposeKeyAction(jsonxx::Object param, int *newFifths);
+
+	void ParseHeader(jsonxx::Object header);
 ///@}
 #endif
 
