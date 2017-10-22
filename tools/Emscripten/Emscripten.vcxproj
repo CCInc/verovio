@@ -79,7 +79,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <None Include="build.bat" />
-    <None Include="build.sh" />
+    <None Include="buildProd.bat" />
   </ItemGroup>
   <ItemGroup>
     <Text Include="CMakeLists.txt" />
