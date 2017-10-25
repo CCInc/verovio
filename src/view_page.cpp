@@ -111,7 +111,7 @@ void View::DrawHeader(DeviceContext *dc)
 	float y = m_doc->m_drawingPageTopMar;
 	float middleOfPageX = m_doc->m_drawingPageWidth / 2 - m_doc->m_drawingPageLeftMar;
 	float leftX = 0;
-	float rightX = m_doc->m_drawingPageWidth - m_doc->m_drawingPageLeftMar;
+	float rightX = m_doc->m_drawingPageWidth - m_doc->m_drawingPageLeftMar - m_doc->m_drawingPageRightMar;
 	
 	// TITLE
 	dirTxt.SetPointSize(fontSize * 2);
