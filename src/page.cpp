@@ -339,7 +339,8 @@ void Page::LayOutVertically()
 
     // Adjust system Y position
     AlignSystemsParams alignSystemsParams;
-    alignSystemsParams.m_shift = doc->m_drawingPageHeight - doc->m_drawingPageTopMar - doc->m_drawingPageHeaderHeight;
+    alignSystemsParams.m_shift = doc->m_drawingPageHeight - doc->m_drawingPageTopMar;
+	if (GetPageIdx() == 0) alignSystemsParams.m_shift -= doc->m_drawingPageHeaderHeight;
     alignSystemsParams.m_systemMargin = (doc->GetSpacingSystem()) * doc->GetDrawingUnit(100);
     Functor alignSystems(&Object::AlignSystems);
     this->Process(&alignSystems, &alignSystemsParams);
