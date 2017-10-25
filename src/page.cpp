@@ -395,7 +395,7 @@ int Page::GetContentHeight() const
 
     System *last = dynamic_cast<System *>(m_children.back());
     assert(last);
-    return doc->m_drawingPageHeight - doc->m_drawingPageTopMar - doc->m_drawingPageHeaderHeight - last->GetDrawingYRel() + last->GetHeight();
+    return doc->m_drawingPageHeight - doc->m_drawingPageTopMar - last->GetDrawingYRel() + last->GetHeight();
 }
 
 int Page::GetContentWidth() const

@@ -101,7 +101,7 @@ void View::DrawHeader(DeviceContext *dc)
 	int textMargin = m_doc->GetDrawingStaffSize(100) / 2;
 
 	Staff *staff = static_cast<Staff*>(m_doc->FindChildByType(STAFF));
-	int fontSize = m_doc->GetDrawingLyricFont(staff->m_drawingStaffSize)->GetPointSize();
+	int fontSize = m_doc->GetDrawingLyricFont(100)->GetPointSize();
 
 	dc->SetBrush(m_currentColour, AxSOLID);
 	dc->SetFont(&dirTxt);
@@ -123,7 +123,7 @@ void View::DrawHeader(DeviceContext *dc)
 	titleText->SetText(UTF8to16(m_doc->m_title));
 	text->AddChild(titleText);
 
-	GetTextHeightWidth(m_doc->m_title, dc, textHeight, textWidth);
+	GetTextHeightWidth(m_doc->m_title, dc, &textHeight, &textWidth);
 
 	y += textHeight;
 	dc->StartText(middleOfPageX, y, CENTER);
@@ -140,7 +140,7 @@ void View::DrawHeader(DeviceContext *dc)
 	subtitleText->SetText(UTF8to16(m_doc->m_subtitle));
 	text->AddChild(subtitleText);
 
-	GetTextHeightWidth(m_doc->m_subtitle, dc, textHeight, textWidth);
+	GetTextHeightWidth(m_doc->m_subtitle, dc, &textHeight, &textWidth);
 
 	y += textMargin + textHeight;
 	dc->StartText(middleOfPageX, y, CENTER);
@@ -157,7 +157,7 @@ void View::DrawHeader(DeviceContext *dc)
 	arrText->SetText(UTF8to16(m_doc->m_arrangement));
 	text->AddChild(arrText);
 
-	GetTextHeightWidth(m_doc->m_arrangement, dc, textHeight, textWidth);
+	GetTextHeightWidth(m_doc->m_arrangement, dc, &textHeight, &textWidth);
 
 	y += textMargin + textHeight;
 	dc->StartText(leftX, y, LEFT);
@@ -174,7 +174,7 @@ void View::DrawHeader(DeviceContext *dc)
 	composerText->SetText(UTF8to16(m_doc->m_composer));
 	text->AddChild(composerText);
 
-	GetTextHeightWidth(m_doc->m_composer, dc, textHeight, textWidth);
+	GetTextHeightWidth(m_doc->m_composer, dc, &textHeight, &textWidth);
 
 	//y += textMargin + textHeight;
 	dc->StartText(rightX, y, RIGHT);
@@ -190,15 +190,15 @@ void View::DrawHeader(DeviceContext *dc)
 	m_doc->m_drawingPageHeaderHeight = y - m_doc->m_drawingPageTopMar;
 }
 
-void View::GetTextHeightWidth(std::string wtext, DeviceContext *dc, int &m_textHeight, int &m_textWidth)
+void View::GetTextHeightWidth(std::string wtext, DeviceContext *dc, int *m_textHeight, int *m_textWidth)
 {
 	TextExtend extend;
 	dc->GetTextExtent(wtext, &extend);
-	m_textWidth = extend.m_width;
+	*m_textWidth = extend.m_width;
 	// keep that maximum values for ascent and descent
-	int m_textAscent = std::max(m_textAscent, extend.m_ascent);
-	int m_textDescent = std::max(m_textDescent, extend.m_descent);
-	m_textHeight = m_textAscent + m_textDescent;
+	int m_textAscent = std::max(0, extend.m_ascent);
+	int m_textDescent = std::max(0, extend.m_descent);
+	(*m_textHeight) = m_textAscent + m_textDescent;
 }
 
 double View::GetPPUFactor() const

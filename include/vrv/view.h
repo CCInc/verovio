@@ -465,7 +465,7 @@ private:
      */
     int GetNearestInterStaffPosition(int y, Staff *staff, data_STAFFREL place);
 
-	void GetTextHeightWidth(std::string wtext, DeviceContext * dc, int & m_textHeight, int & m_textWidth);
+	void GetTextHeightWidth(std::string wtext, DeviceContext * dc, int *m_textHeight, int *m_textWidth);
 public:
     /** Document */
     Doc *m_doc;

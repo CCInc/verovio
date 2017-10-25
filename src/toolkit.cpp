@@ -742,19 +742,19 @@ std::string Toolkit::GetElementAttr(const std::string &xmlId)
 }
 
 
-#if defined(USE_EMSCRIPTEN)
+#ifdef USE_EMSCRIPTEN
 void Toolkit::ParseHeader(jsonxx::Object header)
 {
 	std::string title, subtitle, composer, arrangement;
 
-	if (param.has<jsonxx::String>("title"))
-		title = param.get<jsonxx::String>("title");
-	if (param.has<jsonxx::String>("subtitle"))
-		subtitle = param.get<jsonxx::String>("subtitle");
-	if (param.has<jsonxx::String>("composer"))
-		composer = param.get<jsonxx::String>("composer");
-	if (param.has<jsonxx::String>("arrangement"))
-		arrangement = param.get<jsonxx::String>("arrangement");	
+	if (header.has<jsonxx::String>("title"))
+		title = header.get<jsonxx::String>("title");
+	if (header.has<jsonxx::String>("subtitle"))
+		subtitle = header.get<jsonxx::String>("subtitle");
+	if (header.has<jsonxx::String>("composer"))
+		composer = header.get<jsonxx::String>("composer");
+	if (header.has<jsonxx::String>("arrangement"))
+		arrangement = header.get<jsonxx::String>("arrangement");
 
 	SetHeader(title, subtitle, composer, arrangement);
 }
