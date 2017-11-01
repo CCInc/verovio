@@ -108,7 +108,7 @@ void View::DrawHeader(DeviceContext *dc)
 
 	dc->StartGraphic(text, "", text->GetUuid());
 
-	float y = m_doc->m_drawingPageTopMar;
+	float y = 0;// m_doc->m_drawingPageTopMar;
 	float middleOfPageX = m_doc->m_drawingPageWidth / 2 - m_doc->m_drawingPageLeftMar;
 	float leftX = 0;
 	float rightX = m_doc->m_drawingPageWidth - m_doc->m_drawingPageLeftMar - m_doc->m_drawingPageRightMar;
@@ -187,7 +187,7 @@ void View::DrawHeader(DeviceContext *dc)
 
 	dc->EndGraphic(text, this);
 
-	m_doc->m_drawingPageHeaderHeight = y - m_doc->m_drawingPageTopMar;
+	m_doc->m_drawingPageHeaderHeight = y;
 }
 
 void View::GetTextHeightWidth(std::string wtext, DeviceContext *dc, int *m_textHeight, int *m_textWidth)
