@@ -594,6 +594,7 @@ bool Toolkit::LoadData(const std::string &data)
 
 std::string Toolkit::GetMEI(int pageNo, bool scoreBased)
 {
+	m_doc.m_header.reset();
     // Page number is one-based - correct it to 0-based first
     pageNo--;
 

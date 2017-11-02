@@ -568,10 +568,26 @@ bool MeiOutput::WriteMeiDoc(Doc *doc)
     else {
         pugi::xml_node meiHead = m_mei.append_child("meiHead");
         pugi::xml_node fileDesc = meiHead.append_child("fileDesc");
+
         pugi::xml_node titleStmt = fileDesc.append_child("titleStmt");
-        titleStmt.append_child("title");
+        pugi::xml_node title = titleStmt.append_child("title");
+		title.append_child(pugi::node_pcdata).set_value(m_doc->m_title.c_str());
+		pugi::xml_node subtitle = titleStmt.append_child("title");
+		pugi::xml_attribute subtitleAttr = subtitle.append_attribute("type");
+		subtitleAttr.set_value("subordinate");
+		subtitle.append_child(pugi::node_pcdata).set_value(m_doc->m_subtitle.c_str());
+		pugi::xml_node composer = titleStmt.append_child("composer");
+		composer.append_child(pugi::node_pcdata).set_value(m_doc->m_composer.c_str());
+
         pugi::xml_node pubStmt = fileDesc.append_child("pubStmt");
         pugi::xml_node date = pubStmt.append_child("date");
+
+		pugi::xml_node workDesc = meiHead.append_child("workDesc");
+		pugi::xml_node work = workDesc.append_child("work");
+		pugi::xml_node perfMedium = work.append_child("perfMedium");
+		pugi::xml_node perfResList = perfMedium.append_child("perfResList");
+		pugi::xml_node perfRes = perfResList.append_child("perfRes");
+		perfRes.append_child(pugi::node_pcdata).set_value(m_doc->m_arrangement.c_str());
 
         pugi::xml_node encodingDesc = meiHead.append_child("encodingDesc");
         pugi::xml_node projectDesc = encodingDesc.append_child("projectDesc");
