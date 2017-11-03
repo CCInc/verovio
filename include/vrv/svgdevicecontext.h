@@ -87,7 +87,7 @@ public:
     virtual void DrawText(const std::string &text, const std::wstring wtext = L"");
     virtual void DrawMusicText(const std::wstring &text, int x, int y, bool setSmuflGlyph = false);
     virtual void DrawSpline(int n, Point points[]);
-    virtual void DrawBackgroundImage(int x = 0, int y = 0);
+    virtual void DrawBackgroundImage(int x = 0, int y = 0, double width = -1, double height = -1);
     ///@}
 
     /**

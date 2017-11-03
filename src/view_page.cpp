@@ -64,12 +64,15 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
     if (background) dc->DrawRectangle(0, 0, m_doc->m_drawingPageWidth, m_doc->m_drawingPageHeight);
 
-    dc->DrawBackgroundImage();
-
     Point origin = dc->GetLogicalOrigin();
     dc->SetLogicalOrigin(origin.x - m_doc->m_drawingPageLeftMar, origin.y - m_doc->m_drawingPageTopMar);
 
-    dc->StartPage();
+	dc->StartPage();
+
+	double pageWidth = m_doc->m_drawingPageWidth - (m_doc->m_drawingPageLeftMar + m_doc->m_drawingPageRightMar);
+	double pageHeight = m_doc->m_drawingPageHeight - (m_doc->m_drawingPageTopMar * 2);
+	dc->DrawBackgroundImage(0, 0, pageWidth, pageHeight);
+
 	// Only render the header on the first page
 	if (m_pageIdx == 0)
 	{
