@@ -25,6 +25,7 @@
 #include "doc.h"
 #include "dynam.h"
 #include "ending.h"
+#include "elementpart.h"
 #include "fb.h"
 #include "fermata.h"
 #include "functorparams.h"
@@ -1977,7 +1978,7 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
     assert(tempo);
 
     // Cannot draw a tempo that has no start position
-    if (!tempo->GetStart()) return;
+    if (!tempo->GetStart() || tempo->GetMm() == "") return;
 
     dc->StartGraphic(tempo, "", tempo->GetUuid());
 
@@ -2011,15 +2012,75 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
     for (staffIter = staffList.begin(); staffIter != staffList.end(); staffIter++) {
         system->SetCurrentFloatingPositioner((*staffIter)->GetN(), tempo, tempo->GetStart(), *staffIter);
 
-        tempoTxt.SetPointSize(m_doc->GetDrawingLyricFont((*staffIter)->m_drawingStaffSize)->GetPointSize());
+		int staffSize = (*staffIter)->m_drawingStaffSize;
+		//staffSize /= 2;
+        tempoTxt.SetPointSize(m_doc->GetDrawingLyricFont(staffSize)->GetPointSize());
+		
+		int drawingDur = tempo->GetMmUnit() & DUR_MENSURAL_MASK; 
+		wchar_t fontNo;
 
-        int y = tempo->GetDrawingY();
+		if (drawingDur == DUR_1) {
+			fontNo = SMUFL_E0A2_noteheadWhole;
+		}
+		// Other values
+		else {
+			if (drawingDur == DUR_2)
+				fontNo = SMUFL_E0A3_noteheadHalf;
+			else
+				fontNo = SMUFL_E0A4_noteheadBlack;
+		}
+
+		dc->SetFont(m_doc->GetDrawingSmuflFont(staffSize, false));
+		TextExtend noteExtend;
+		dc->GetSmuflTextExtent(std::wstring(&fontNo), &noteExtend);
+
+		int y = tempo->GetDrawingY();
+		int noteY = y;
+		noteY += noteExtend.m_height / 2;
+
+		if (drawingDur > DUR_1) {
+			Stem *currentStem = new Stem();
+
+			int baseStemLen = -m_doc->GetDrawingUnit(staffSize) * STANDARD_STEMLENGTH; 
+			baseStemLen = m_doc->GetCueSize(baseStemLen);
+			// Even if a stem length is given we add the length of the chord content (however only if not 0)
+			// Also, the given stem length is understood as being mesured from the center of the note.
+			// This means that it will be adjusted according to the note head (see below
+			int defaultYShift = m_doc->GetDrawingUnit(staffSize) / 4;
+			// x default is always set to the radius for now
+			int radius = m_doc->GetGlyphWidth(fontNo, staffSize, true);
+			// adjust the radius in order to take the stem width into account
+			radius -= m_doc->GetDrawingStemWidth(staffSize) / 2;
+			Point p(radius, defaultYShift);
+			baseStemLen += p.y;
+			noteY += baseStemLen / 2.5;
+			int stemY = noteY + p.y;
+			int stemX = x + p.x;
+
+			DrawFilledRectangle(dc, stemX - m_doc->GetDrawingStemWidth(staffSize) / 2,
+				stemY, stemX + m_doc->GetDrawingStemWidth(staffSize) / 2,
+				stemY - baseStemLen);
+		}
+
+		DrawSmuflCode(dc, x, noteY, fontNo, staffSize, true, false);
+		x += noteExtend.m_width;
+
+		int dotY = noteY;
+		int dotX = x;
+		// MARGIN UNIT: m_doc->GetDrawingUnit(staffSize);
+		DrawDotsPart(
+			dc, dotX, dotY, tempo->GetMmDots(), *staffIter);
+		x += m_doc->GetDrawingUnit(staffSize) * 1.5 * tempo->GetMmDots();
 
         dc->SetBrush(m_currentColour, AxSOLID);
         dc->SetFont(&tempoTxt);
 
+		Text *titleText = new Text();
+
+		titleText->SetText(UTF8to16("= " + tempo->GetMm()));
+
         dc->StartText(ToDeviceContextX(x), ToDeviceContextY(y), alignment);
-        DrawTextChildren(dc, tempo, x, y, setX, setY);
+		DrawText(dc, titleText, 0, 0, setX, setY);
         dc->EndText();
 
         dc->ResetFont();
