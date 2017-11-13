@@ -117,7 +117,7 @@ namespace vrv {
 			assert(staffDef);
 
 			Clef *clef = staffDef->GetCurrentClef();
-			if (clef->GetShape() != CLEFSHAPE_perc && clef->GetShape() != CLEFSHAPE_TAB)
+			if (clef->GetShape() != CLEFSHAPE_perc && clef->GetShape() != CLEFSHAPE_TAB && staffDef->HasKeySigInfo())
 			{
 				KeySig *keySig = staffDef->GetKeySigCopy();
 				int keySigLog = keySig->ConvertToKeySigLog();
