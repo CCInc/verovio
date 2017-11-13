@@ -134,7 +134,7 @@ public:
     /**
      * Returns key signature from scoreDefs.
      */
-    std::string GetKeySignature(int staffNo);
+    std::string GetKeySignature();
 
     /**
      * Get the MEI as a string.

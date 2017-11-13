@@ -996,18 +996,36 @@ std::string Toolkit::GetElementsAtTime(int millisec)
 #endif
 }
 
-std::string Toolkit::GetKeySignature(int n)
+std::string Toolkit::GetKeySignature()
 {
 #if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
     jsonxx::Object o;
     jsonxx::Array a;
 
-	StaffDef *staffDef = m_doc.m_scoreDef.GetStaffDef(n);
-	assert(staffDef);
-	
-	if (staffDef->HasKeySigInfo())
+	KeySig *keySig;
+	if (m_doc.m_scoreDef.HasKeySigInfo())
 	{
-		KeySig *keySig = staffDef->GetKeySigCopy();
+		keySig = m_doc.m_scoreDef.GetKeySigCopy();
+	}
+
+	if (!keySig)
+	{
+		std::vector<int> staffs = m_doc.m_scoreDef.GetStaffNs();
+		std::vector<int>::iterator iter;
+		for (iter = staffs.begin(); iter != staffs.end(); iter++) {
+			StaffDef *staffDef = m_doc.m_scoreDef.GetStaffDef(*iter);
+			assert(staffDef);
+
+			if (staffDef->HasKeySigInfo())
+			{
+				keySig = staffDef->GetKeySigCopy();
+				break;
+			}
+		}
+	}
+
+	if (keySig)
+	{
 		int keySigLog = keySig->ConvertToKeySigLog();
 
 		char alt = keySig->GetAlterationNumber();
@@ -1021,7 +1039,11 @@ std::string Toolkit::GetKeySignature(int n)
 		o << "GetAlterationNumber()" << alt;
 		o << "GetAlterationType()" << altType;
 	}
-    return o.json();
+	else {
+		o << "error" << "no keysig found :(";
+	}
+
+	return o.json();
 #else
     // The non-js version of the app should not use this function.
     return "";
