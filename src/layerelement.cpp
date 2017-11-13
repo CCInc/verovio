@@ -193,6 +193,9 @@ Beam *LayerElement::IsInBeam()
 Staff *LayerElement::GetCrossStaff(Layer *&layer) const
 {
     if (m_crossStaff) {
+		if (!m_crossLayer)
+			return m_crossStaff;
+
         assert(m_crossLayer);
         layer = m_crossLayer;
         return m_crossStaff;
