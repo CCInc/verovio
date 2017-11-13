@@ -194,7 +194,7 @@ Staff *LayerElement::GetCrossStaff(Layer *&layer) const
 {
     if (m_crossStaff) {
 		if (!m_crossLayer)
-			return m_crossStaff;
+			return NULL;
 
         assert(m_crossLayer);
         layer = m_crossLayer;
