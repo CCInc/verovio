@@ -133,7 +133,7 @@ AttMidiinstrument::~AttMidiinstrument()
 void AttMidiinstrument::ResetMidiinstrument()
 {
     m_midiInstrnum = -1;
-    m_midiInstrname = MIDINAMES_NONE;
+    m_midiInstrname = "";
     m_midiPan = -1;
     m_midiVolume = -1;
 }
@@ -147,7 +147,8 @@ bool AttMidiinstrument::ReadMidiinstrument(pugi::xml_node element)
         hasAttribute = true;
     }
     if (element.attribute("midi.instrname")) {
-        this->SetMidiInstrname(StrToMidinames(element.attribute("midi.instrname").value()));
+        //this->SetMidiInstrname(StrToMidinames(element.attribute("midi.instrname").value()));
+		this->SetMidiInstrname(element.attribute("midi.instrname").value());
         element.remove_attribute("midi.instrname");
         hasAttribute = true;
     }
@@ -172,7 +173,7 @@ bool AttMidiinstrument::WriteMidiinstrument(pugi::xml_node element)
         wroteAttribute = true;
     }
     if (this->HasMidiInstrname()) {
-        element.append_attribute("midi.instrname") = MidinamesToStr(this->GetMidiInstrname()).c_str();
+        //element.append_attribute("midi.instrname") = MidinamesToStr(this->GetMidiInstrname()).c_str();
         wroteAttribute = true;
     }
     if (this->HasMidiPan()) {
@@ -193,7 +194,7 @@ bool AttMidiinstrument::HasMidiInstrnum() const
 
 bool AttMidiinstrument::HasMidiInstrname() const
 {
-    return (m_midiInstrname != MIDINAMES_NONE);
+    return (!m_midiInstrname.empty());
 }
 
 bool AttMidiinstrument::HasMidiPan() const
@@ -529,7 +530,7 @@ bool Att::SetMidi(Object *element, std::string attrType, std::string attrValue)
             return true;
         }
         if (attrType == "midi.instrname") {
-            att->SetMidiInstrname(att->StrToMidinames(attrValue));
+            att->SetMidiInstrname(attrValue);
             return true;
         }
         if (attrType == "midi.pan") {
@@ -622,7 +623,7 @@ void Att::GetMidi(const Object *element, ArrayOfStrAttr *attributes)
             attributes->push_back(std::make_pair("midi.instrnum", att->MidivalueToStr(att->GetMidiInstrnum())));
         }
         if (att->HasMidiInstrname()) {
-            attributes->push_back(std::make_pair("midi.instrname", att->MidinamesToStr(att->GetMidiInstrname())));
+            //attributes->push_back(std::make_pair("midi.instrname", att->MidinamesToStr(att->GetMidiInstrname())));
         }
         if (att->HasMidiPan()) {
             attributes->push_back(std::make_pair("midi.pan", att->MidivalueToStr(att->GetMidiPan())));

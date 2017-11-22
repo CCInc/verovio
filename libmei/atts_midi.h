@@ -107,8 +107,8 @@ public:
     data_MIDIVALUE GetMidiInstrnum() const { return m_midiInstrnum; }
     bool HasMidiInstrnum() const;
     //
-    void SetMidiInstrname(data_MIDINAMES midiInstrname_) { m_midiInstrname = midiInstrname_; }
-    data_MIDINAMES GetMidiInstrname() const { return m_midiInstrname; }
+    void SetMidiInstrname(std::string midiInstrname_) { m_midiInstrname = midiInstrname_; }
+    std::string GetMidiInstrname() const { return m_midiInstrname; }
     bool HasMidiInstrname() const;
     //
     void SetMidiPan(data_MIDIVALUE midiPan_) { m_midiPan = midiPan_; }
@@ -124,7 +124,7 @@ private:
     /** Sets the MIDI instrument number. **/
     data_MIDIVALUE m_midiInstrnum;
     /** Provides a General MIDI label for the MIDI instrument. **/
-    data_MIDINAMES m_midiInstrname;
+	std::string m_midiInstrname;
     /**
      * Sets the instrument's position in a stereo field.
      * Values of 0 and 1 both pan left, 127 pans right, and 64 pans to the center.
