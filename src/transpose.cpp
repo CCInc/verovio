@@ -216,6 +216,16 @@ namespace vrv {
 				updatedStaffDef->SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
 			}
 		}
+
+		if (m_doc->m_scoreDef.HasKeySig())
+		{
+			data_KEYSIGNATURE keySig = m_doc->m_scoreDef.GetKeySig();
+
+			int keySigLog = newFifths + KEYSIGNATURE_0;
+
+			m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
+		}
+
 		m_doc->UnCastOffDoc();
 		m_doc->CastOffDoc();
 		return true;
