@@ -105,27 +105,32 @@ namespace vrv {
 	{
 		int oldFifths = 0;
 
-		Measure firstMeasure = m_doc->FindChildByType(MEASURE);
-		ArrayOfObjects firstMeasureStaffs = m_doc->FindAllChildByType(STAFF);
+		KeySig *keySig;
+		if (m_doc->m_scoreDef.HasKeySigInfo())
+		{
+			keySig = m_doc->m_scoreDef.GetKeySigCopy();
+		}
 
-		ArrayOfObjects::iterator iter;
-		for (iter = firstMeasureStaffs.begin(); iter != firstMeasureStaffs.end(); iter++) {
-			Staff *staff = dynamic_cast<Staff *>(*iter);
-			assert(staff);
+		if (!keySig)
+		{
+			std::vector<int> staffs = m_doc->m_scoreDef.GetStaffNs();
+			std::vector<int>::iterator iter;
+			for (iter = staffs.begin(); iter != staffs.end(); iter++) {
+				StaffDef *staffDef = m_doc->m_scoreDef.GetStaffDef(*iter);
+				assert(staffDef);
 
-			StaffDef *staffDef = staff->m_drawingStaffDef;
-			assert(staffDef);
-
-			Clef *clef = staffDef->GetCurrentClef();
-			if (clef->GetShape() != CLEFSHAPE_perc && clef->GetShape() != CLEFSHAPE_TAB && staffDef->HasKeySigInfo())
-			{
-				KeySig *keySig = staffDef->GetKeySigCopy();
-				int keySigLog = keySig->ConvertToKeySigLog();
-				delete keySig;
-
-				oldFifths = keySigLog - KEYSIGNATURE_0;
-				break;
+				if (staffDef->HasKeySigInfo())
+				{
+					keySig = staffDef->GetKeySigCopy();
+					break;
+				}
 			}
+		}
+
+		if (keySig)
+		{
+			int keySigLog = keySig->ConvertToKeySigLog();
+			oldFifths = keySigLog - KEYSIGNATURE_0;
 		}
 		return oldFifths;
 	}

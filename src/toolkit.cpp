@@ -1000,48 +1000,8 @@ std::string Toolkit::GetKeySignature()
 {
 #if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
     jsonxx::Object o;
-    jsonxx::Array a;
 
-	KeySig *keySig;
-	if (m_doc.m_scoreDef.HasKeySigInfo())
-	{
-		keySig = m_doc.m_scoreDef.GetKeySigCopy();
-	}
-
-	if (!keySig)
-	{
-		std::vector<int> staffs = m_doc.m_scoreDef.GetStaffNs();
-		std::vector<int>::iterator iter;
-		for (iter = staffs.begin(); iter != staffs.end(); iter++) {
-			StaffDef *staffDef = m_doc.m_scoreDef.GetStaffDef(*iter);
-			assert(staffDef);
-
-			if (staffDef->HasKeySigInfo())
-			{
-				keySig = staffDef->GetKeySigCopy();
-				break;
-			}
-		}
-	}
-
-	if (keySig)
-	{
-		int keySigLog = keySig->ConvertToKeySigLog();
-
-		char alt = keySig->GetAlterationNumber();
-		int altType = keySig->GetAlterationType();
-		int fifths = keySigLog - KEYSIGNATURE_0;
-		//int keySigLog = keySigLog;
-
-		//o << "keySigLog" << Att::KeysignatureToStr(keySigLog);
-		o << "fifths" << fifths;
-		o << "keySigLog" << keySigLog;
-		o << "GetAlterationNumber()" << alt;
-		o << "GetAlterationType()" << altType;
-	}
-	else {
-		o << "error" << "no keysig found :(";
-	}
+	o << "fifths" << Transpose::GetFirstKeySigFifths(&m_doc);
 
 	return o.json();
 #else
