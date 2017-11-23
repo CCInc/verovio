@@ -196,7 +196,8 @@ $exports .= "'_vrvToolkit_renderToMidi',";
 $exports .= "'_vrvToolkit_setOptions',";
 $exports .= "'_vrvToolkit_edit',";
 $exports .= "'_vrvToolkit_getElementAttr',";
-$exports .= "'_vrvToolkit_getKeySignature'";
+$exports .= "'_vrvToolkit_getKeySignature',";
+$exports .= "'_vrvToolkit_getInstruments'";
 $exports .= "]\"";
 
 my $command = "$EMCC $CHATTY $includes $defines $FLAGS $sources $embed $exports $output";

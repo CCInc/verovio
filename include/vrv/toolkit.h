@@ -400,6 +400,7 @@ public:
     bool Insert(std::string elementType, std::string startId, std::string endId);
     bool Set(std::string elementId, std::string attrType, std::string attrValue);
 	bool TransposeKey(int newFifths);
+	std::string GetInstruments();
     ///@}
 
 private:
@@ -418,6 +419,8 @@ protected:
 	bool ParseTransposeKeyAction(jsonxx::Object param, int *newFifths);
 
 	void ParseHeader(jsonxx::Object header);
+	jsonxx::Object GetStaffGrp(StaffGrp *staffGrp);
+	jsonxx::Object GetStaffDef(StaffDef *staffDef);
 ///@}
 #endif
 

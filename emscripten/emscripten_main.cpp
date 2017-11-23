@@ -150,4 +150,10 @@ const char *vrvToolkit_getKeySignature(Toolkit *tk)
 	tk->SetCString(tk->GetKeySignature());
 	return tk->GetCString();
 }
+
+const char *vrvToolkit_getInstruments(Toolkit *tk)
+{
+	tk->SetCString(tk->GetInstruments());
+	return tk->GetCString();
+}
 }

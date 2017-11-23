@@ -1050,6 +1050,67 @@ std::string Toolkit::GetKeySignature()
 #endif
 }
 
+std::string Toolkit::GetInstruments() 
+{
+#if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
+	ScoreDef scoreDef = m_doc.m_scoreDef;
+	StaffGrp *topStaffGrp = dynamic_cast<StaffGrp *>(scoreDef.FindChildByType(STAFFGRP));
+
+	jsonxx::Object output = GetStaffGrp(topStaffGrp);
+	return output.json();
+#else
+	// The non-js version of the app should not use this function.
+	return "";
+#endif
+}
+
+#if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
+jsonxx::Object Toolkit::GetStaffGrp(StaffGrp *staffGrp)
+{
+	jsonxx::Object output;
+
+	if (staffGrp->HasMidiInstrname())
+	{
+		output << "instrName" << staffGrp->GetMidiInstrname();
+	}
+	if (staffGrp->HasLabel())
+	{
+		output << "label" << staffGrp->GetLabel();
+	}
+	output << "id" << staffGrp->GetUuid();
+
+	int i;
+	StaffGrp *childStaffGrp = NULL;
+	for (i = 0; i < staffGrp->GetChildCount(); i++) {
+		Object *child = staffGrp->GetChild(i);
+		if (child->Is(STAFFGRP)) {
+			output << "staffGrp" << GetStaffGrp(dynamic_cast<StaffGrp *>(child));
+		}
+		else if (child->Is(STAFFDEF)) {
+			output << "staffDef" << GetStaffDef(dynamic_cast<StaffDef *>(child));
+		}
+	}
+	return output;
+}
+
+jsonxx::Object Toolkit::GetStaffDef(StaffDef *staffDef)
+{
+	jsonxx::Object output;
+
+	if (staffDef->HasMidiInstrname())
+	{
+		output << "instrName" << staffDef->GetMidiInstrname();
+	}
+	if (staffDef->HasLabel())
+	{
+		output << "label" << staffDef->GetLabel();
+	}
+	output << "id" << staffDef->GetUuid();
+
+	return output;
+}
+#endif
+
 bool Toolkit::RenderToMidiFile(const std::string &filename)
 {
     MidiFile outputfile;

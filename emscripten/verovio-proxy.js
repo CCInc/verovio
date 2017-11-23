@@ -48,6 +48,9 @@ verovio.vrvToolkit.loadData = Module.cwrap('vrvToolkit_loadData', 'number', ['nu
 // const char *getKeySignature(Toolkit *tk)
 verovio.vrvToolkit.getKeySignature = Module.cwrap('vrvToolkit_getKeySignature', 'string', ['number']);
 
+// const char *getInstruments(Toolkit *tk)
+verovio.vrvToolkit.getInstruments = Module.cwrap('vrvToolkit_getInstruments', 'string', ['number']);
+
 // void redoLayout(Toolkit *ic)
 verovio.vrvToolkit.redoLayout = Module.cwrap('vrvToolkit_redoLayout', null, ['number']);
 
@@ -183,6 +186,10 @@ verovio.toolkit.prototype.getElementAttr = function (xmlId) {
 
 verovio.toolkit.prototype.getKeySignature = function () {
 	return JSON.parse(verovio.vrvToolkit.getKeySignature(this.ptr));
+};
+
+verovio.toolkit.prototype.getInstruments = function () {
+	return JSON.parse(verovio.vrvToolkit.getInstruments(this.ptr));
 };
 
 /***************************************************************************************************************************/
