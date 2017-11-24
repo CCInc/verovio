@@ -32,7 +32,7 @@ namespace vrv {
 
     public:
         Transpose(Doc *doc);
-        bool transpose(int newFifths);
+        bool transposeFifths(int newFifths);
         static int GetFirstKeySigFifths(Doc * m_doc);
     private:
         vrv::Transpose::Interval keydiff2Interval(int oldFifths, int newFifths, TransposeDirection dir = TransposeDirection::CLOSEST);
@@ -43,6 +43,7 @@ namespace vrv {
         static int tpc2step(int tpc);
         static int step2tpc(int step, int alter);
         static int tpc2pitch(int tpc);
+        bool transposeNotes(Interval interval);
 
         int chromaticHistory;
         Doc *m_doc;

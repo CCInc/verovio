@@ -1279,7 +1279,7 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
 
 bool Toolkit::TransposeKey(int newFifths)
 {
-	return m_transpose->transpose(newFifths);
+	return m_transpose->transposeFifths(newFifths);
 }
 
 #ifdef USE_EMSCRIPTEN

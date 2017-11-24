@@ -135,14 +135,55 @@ namespace vrv {
         return oldFifths;
     }
 
-    bool vrv::Transpose::transpose(int newFifths)
+    bool vrv::Transpose::transposeFifths(int newFifths)
     {
         // Transpose by key
 
         // Find the first key signature from the pitched staves
         int oldFifths = GetFirstKeySigFifths(m_doc);
         Interval interval = keydiff2Interval(oldFifths, newFifths);
+        transposeNotes(interval);
 
+        ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
+        ArrayOfObjects::iterator iter2;
+        for (iter2 = staffs.begin(); iter2 != staffs.end(); iter2++) {
+            Staff *staff = dynamic_cast<Staff *>(*iter2);
+            assert(staff);
+
+            StaffDef *staffDef = staff->m_drawingStaffDef;
+            assert(staffDef);
+
+            // skip perc. clefs
+            Clef *clef = staffDef->GetCurrentClef();
+            if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
+
+            if (staffDef->HasKeySig())
+            {
+                data_KEYSIGNATURE keySig = staffDef->GetKeySig();
+
+                int keySigLog = newFifths + KEYSIGNATURE_0;
+
+                StaffDef *updatedStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
+                updatedStaffDef->SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
+            }
+        }
+
+        if (m_doc->m_scoreDef.HasKeySig())
+        {
+            data_KEYSIGNATURE keySig = m_doc->m_scoreDef.GetKeySig();
+
+            int keySigLog = newFifths + KEYSIGNATURE_0;
+
+            m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
+        }
+
+        m_doc->UnCastOffDoc();
+        m_doc->CastOffDoc();
+        return true;
+    }
+
+    bool vrv::Transpose::transposeNotes(Interval interval)
+    {
         ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
         ArrayOfObjects::iterator iter2;
         for (iter2 = staffs.begin(); iter2 != staffs.end(); iter2++) {
@@ -205,29 +246,8 @@ namespace vrv {
 
                 note->SetOct(newOct);
             }
-
-            if (staffDef->HasKeySig())
-            {
-                data_KEYSIGNATURE keySig = staffDef->GetKeySig();
-
-                int keySigLog = newFifths + KEYSIGNATURE_0;
-
-                StaffDef *updatedStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
-                updatedStaffDef->SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
-            }
         }
 
-        if (m_doc->m_scoreDef.HasKeySig())
-        {
-            data_KEYSIGNATURE keySig = m_doc->m_scoreDef.GetKeySig();
-
-            int keySigLog = newFifths + KEYSIGNATURE_0;
-
-            m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
-        }
-
-        m_doc->UnCastOffDoc();
-        m_doc->CastOffDoc();
         return true;
     }
 
