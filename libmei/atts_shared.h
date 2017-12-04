@@ -5783,6 +5783,10 @@ public:
     void SetTransSemi(double transSemi_) { m_transSemi = transSemi_; }
     double GetTransSemi() const { return m_transSemi; }
     bool HasTransSemi() const;
+    //
+    void SetTransOct(double transSemi_) { m_transOct = transSemi_; }
+    double GetTransOct() const { return m_transOct; }
+    bool HasTransOct() const;
     ///@}
 
 private:
@@ -5796,6 +5800,7 @@ private:
      * necessary to calculate the sounded pitch from the written one.
      **/
     double m_transSemi;
+    double m_transOct;
 
     /* include <atttrans.semi> */
 };

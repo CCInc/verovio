@@ -7628,6 +7628,7 @@ void AttTransposition::ResetTransposition()
 {
     m_transDiat = 0.0;
     m_transSemi = 0.0;
+    m_transOct = 0.0;
 }
 
 bool AttTransposition::ReadTransposition(pugi::xml_node element)
@@ -7641,6 +7642,11 @@ bool AttTransposition::ReadTransposition(pugi::xml_node element)
     if (element.attribute("trans.semi")) {
         this->SetTransSemi(StrToDbl(element.attribute("trans.semi").value()));
         element.remove_attribute("trans.semi");
+        hasAttribute = true;
+    }
+    if (element.attribute("trans.oct")) {
+        this->SetTransOct(StrToDbl(element.attribute("trans.oct").value()));
+        element.remove_attribute("trans.oct");
         hasAttribute = true;
     }
     return hasAttribute;
@@ -7657,6 +7663,10 @@ bool AttTransposition::WriteTransposition(pugi::xml_node element)
         element.append_attribute("trans.semi") = DblToStr(this->GetTransSemi()).c_str();
         wroteAttribute = true;
     }
+    if (this->HasTransOct()) {
+        element.append_attribute("trans.oct") = DblToStr(this->GetTransOct()).c_str();
+        wroteAttribute = true;
+    }
     return wroteAttribute;
 }
 
@@ -7668,6 +7678,11 @@ bool AttTransposition::HasTransDiat() const
 bool AttTransposition::HasTransSemi() const
 {
     return (m_transSemi != 0.0);
+}
+
+bool AttTransposition::HasTransOct() const
+{
+    return (m_transOct != 0.0);
 }
 
 /* include <atttrans.semi> */

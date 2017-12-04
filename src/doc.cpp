@@ -215,6 +215,7 @@ void Doc::ExportMIDI(MidiFile *midiFile)
         // Get the transposition (semi-tone) value for the staff
         if (StaffDef *staffDef = this->m_scoreDef.GetStaffDef(staves->first)) {
             if (staffDef->HasTransSemi()) transSemi = staffDef->GetTransSemi();
+            if (staffDef->HasTransOct()) transSemi += staffDef->GetTransOct() * 12;
             midiTrack = staffDef->GetN();
             midiFile->addTrack();
             if (staffDef->HasLabel()) midiFile->addTrackName(midiTrack, 0, staffDef->GetLabel());
