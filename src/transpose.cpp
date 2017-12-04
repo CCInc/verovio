@@ -1,13 +1,17 @@
 #include "transpose.h"
 
 #include <assert.h>
+#include <math.h>
 
 #include "staff.h"
 #include "note.h"
 #include "measure.h"
 #include "layer.h"
+#include <attcomparison.h>
 
 namespace vrv {
+    int vrv::Transpose::Interval::LEAST_FIFTHS_STEPS[] = { 0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6 };
+
     vrv::Transpose::Interval::Interval()
         : diatonic(0), chromatic(0)
     {
@@ -34,6 +38,53 @@ namespace vrv {
     {
         diatonic = -diatonic;
         chromatic = -chromatic;
+    }
+
+    vrv::Transpose::Interval *vrv::Transpose::Interval::NormalizeTritone()
+    {
+        if (IntervalClass() == 6 && StepClass() == 4)
+        {
+            return new Interval(diatonic - 1, chromatic);
+        }
+        return this;
+    }
+
+    int vrv::Transpose::Interval::IntervalClass()
+    {
+        int pitches = chromatic;
+        while (pitches < 0)
+        {
+            pitches += 12;
+        }
+        while (pitches >= 12)
+        {
+            pitches -= 12;
+        }
+        return pitches;
+    }
+
+    int vrv::Transpose::Interval::StepClass()
+    {
+        int pitches = diatonic;
+        while (pitches < 0)
+        {
+            pitches += 7;
+        }
+        while (pitches >= 7)
+        {
+            pitches -= 7;
+        }
+        return pitches;
+    }
+
+    vrv::Transpose::Interval *vrv::Transpose::Interval::FromPitches(int pitch)
+    {
+        int octaveNum = floor(abs(pitch) / double(12));
+        int pitchNoOctave = abs(pitch) % 12;
+        int fifths = LEAST_FIFTHS_STEPS[pitchNoOctave] + (octaveNum * 7);
+        if (pitch < 0)
+            fifths = -fifths;
+        return new Interval(fifths, pitch);
     }
 
     vrv::Transpose::Transpose(Doc *doc)
@@ -142,7 +193,6 @@ namespace vrv {
         // Find the first key signature from the pitched staves
         int oldFifths = GetFirstKeySigFifths(m_doc);
         Interval interval = keydiff2Interval(oldFifths, newFifths);
-        transposeNotes(interval);
 
         ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
         ArrayOfObjects::iterator iter2;
@@ -156,6 +206,9 @@ namespace vrv {
             // skip perc. clefs
             Clef *clef = staffDef->GetCurrentClef();
             if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
+
+            ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
+            transposeNotes(interval, notes);
 
             if (staffDef->HasKeySig())
             {
@@ -182,70 +235,201 @@ namespace vrv {
         return true;
     }
 
-    bool vrv::Transpose::transposeNotes(Interval interval)
+    bool vrv::Transpose::transposeInterval(vrv::Transpose::Interval interval, StaffDef staffDef)
     {
-        ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
+        Clef *clef = staffDef.GetCurrentClef();
+        if (!clef || clef->GetShape() == CLEFSHAPE_perc) return false;
+
+        AttCommonNComparison comparisonStaffDef(STAFF, staffDef.GetN());
+        ArrayOfObjects staffs;
+        m_doc->FindAllChildByAttComparison(&staffs, &comparisonStaffDef);
+
         ArrayOfObjects::iterator iter2;
         for (iter2 = staffs.begin(); iter2 != staffs.end(); iter2++) {
             Staff *staff = dynamic_cast<Staff *>(*iter2);
             assert(staff);
 
-            StaffDef *staffDef = staff->m_drawingStaffDef;
-            assert(staffDef);
-
             // skip perc. clefs
-            Clef *clef = staffDef->GetCurrentClef();
+            Clef *clef = staffDef.GetCurrentClef();
             if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
 
             ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
-            ArrayOfObjects::iterator notesIter;
-            for (notesIter = notes.begin(); notesIter != notes.end(); notesIter++) {
-                Note *note = dynamic_cast<Note *>(*notesIter);
+            transposeNotes(interval, notes);
+        }
+        
+        m_doc->UnCastOffDoc();
+        m_doc->CastOffDoc();
+        return true;
+    }
+
+    int vrv::Transpose::GetPartTransposition(vrv::Transpose::Interval transposeInterval, StaffDef staffDef, int comfHigh, int comfLow, int proHigh, int proLow, bool multiStaff)
+    {
+        Clef *clef = staffDef.GetCurrentClef();
+        if (!clef || clef->GetShape() == CLEFSHAPE_perc) return 0;
+
+        AttCommonNComparison comparisonStaffDef(STAFF, staffDef.GetN());
+        ArrayOfObjects staffs;
+        m_doc->FindAllChildByAttComparison(&staffs, &comparisonStaffDef);
+
+        int noteHigh = 0;
+        int noteLow = 1000;
+        int noteCount = 0;
+        int noteSum = 0;
+
+        ArrayOfObjects::iterator iter2;
+        for (iter2 = staffs.begin(); iter2 != staffs.end(); iter2++) {
+            Staff *staff = dynamic_cast<Staff *>(*iter2);
+            assert(staff);
+
+            // skip perc. clefs
+            Clef *clef = staffDef.GetCurrentClef();
+            if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
+            int clefLocOffset = clef->GetClefLocOffset();
+
+            ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
+            ArrayOfObjects::iterator noteIter;
+            for (noteIter = notes.begin(); noteIter != notes.end(); noteIter++)
+            {
+                Note *note = dynamic_cast<Note *>(*noteIter);
 
                 data_PITCHNAME steps = note->GetPname();
                 int oct = note->GetOct();
-                int pitchNumber = (PitchFromPname(steps) + AccIdToAlter(note->GetDrawingAccid())) + (oct * 12);
-                pitchNumber += interval.GetChromatic();
+                //offset by transposition amount because it will be transposed
+                int pitchNumber = (PitchFromPname(steps) + AccIdToAlter(note->GetDrawingAccid())) + (oct * 12) + transposeInterval.GetChromatic();
+                int noteLoc = PitchInterface::CalcLoc(note->GetPname(), note->GetOct(), clefLocOffset);
 
-                int currentStep = note->GetPname();
-                int tpc = step2tpc(currentStep - 1, AccIdToAlter(note->GetDrawingAccid()));
-                int newStep = currentStep - 1, newAlter = AccIdToAlter(note->GetDrawingAccid());
-                transposeTpc(tpc, interval, false, newStep, newAlter);
-
-                data_PITCHNAME newPname = static_cast<data_PITCHNAME>((newStep % 7) + 1);
-
-                int newOct = 0;
-                int newPitchNumber = (PitchFromPname(newPname) + newAlter);
-                while (newPitchNumber < 0)
-                {
-                    newPitchNumber += 12;
-                    newOct++;
-                }
-                if (newPitchNumber % 12 != pitchNumber % 12)
-                    assert(newPitchNumber % 12 == pitchNumber % 12);
-
-                while (newPitchNumber != pitchNumber)
-                {
-                    newPitchNumber += 12;
-                    newOct++;
-                }
-
-                note->SetPname(newPname);
-
-                Accid *accid = note->GetDrawingAccid();
-                if (accid)
-                {
-                    note->DeleteChild(accid);
-                }
-                if (newAlter != 0)
-                {
-                    accid = new Accid();
-                    accid->SetAccidGes(AlterToAccId(newAlter));
-                    note->AddChild(accid);
-                }
-
-                note->SetOct(newOct);
+                noteCount++;
+                noteSum += pitchNumber;
+                if (pitchNumber > noteHigh)
+                    noteHigh = pitchNumber;
+                if (pitchNumber < noteLow)
+                    noteLow = pitchNumber;
             }
+        }
+
+        if (noteCount < 1) return 0;
+
+        int noteAvg = round((double)noteSum / (double)noteCount);
+
+        int octaveTransposition = 0;
+        if (!multiStaff)
+        {
+            int averageComf = (comfLow + comfHigh) / 2;
+            while (true)
+            {
+                // if the average is between the average range of the instrument, break
+                if (noteAvg + octaveTransposition >= averageComf - 6 && noteAvg + octaveTransposition <= averageComf + 6)
+                    break;
+
+                if (noteAvg + octaveTransposition < averageComf)
+                    octaveTransposition += 12;
+                else if (noteAvg + octaveTransposition > averageComf)
+                    octaveTransposition -= 12;
+                else
+                    break;
+            }
+
+            // if it's outside of the comfortbale range, see if it can be fitted in the professional range
+            if ((noteHigh + octaveTransposition) > comfHigh || (noteLow + octaveTransposition) < comfLow)
+            {
+                int proOctTransp = 0;
+                int proComf = (proHigh + proLow) / 2;
+                while (true)
+                {
+                    // if the average is between the average range of the instrument, break
+                    if (noteAvg + proOctTransp >= proComf - 6 && noteAvg + proOctTransp <= proComf + 6)
+                        break;
+
+                    if (noteAvg + proOctTransp < proComf)
+                        proOctTransp += 12;
+                    else if (noteAvg + proOctTransp > proComf)
+                        proOctTransp -= 12;
+                    else
+                        break;
+                }
+
+                if (noteHigh + proOctTransp <= comfHigh && noteLow + proOctTransp >= comfLow)
+                    octaveTransposition = proOctTransp;
+            }
+        }
+        else
+        {
+            while (true)
+            {
+                // if the average is between the average range of the instrument, break
+                if (noteLow + octaveTransposition >= comfLow && noteHigh + octaveTransposition <= comfHigh)
+                    break;
+
+                int distanceFromHigh = (noteHigh + octaveTransposition) - comfHigh;
+                int distanceFromLow = comfLow - (noteHigh + octaveTransposition);
+                if (distanceFromHigh > distanceFromLow) 
+                {
+                    octaveTransposition -= 12;
+                }
+                else if (distanceFromHigh < distanceFromLow) 
+                {
+                    octaveTransposition += 12;
+                }
+                else
+                    break;
+
+                if (abs(distanceFromHigh - distanceFromLow) < 12 && abs(noteHigh - noteLow) > abs(comfHigh - comfLow))
+                    break;
+            }
+        }
+
+        return octaveTransposition;
+    }
+
+    bool vrv::Transpose::transposeNotes(Interval interval, ArrayOfObjects notes)
+    {
+        ArrayOfObjects::iterator notesIter;
+        for (notesIter = notes.begin(); notesIter != notes.end(); notesIter++) {
+            Note *note = dynamic_cast<Note *>(*notesIter);
+
+            data_PITCHNAME steps = note->GetPname();
+            int oct = note->GetOct();
+            int pitchNumber = (PitchFromPname(steps) + AccIdToAlter(note->GetDrawingAccid())) + (oct * 12);
+            pitchNumber += interval.GetChromatic();
+
+            int currentStep = note->GetPname();
+            int tpc = step2tpc(currentStep - 1, AccIdToAlter(note->GetDrawingAccid()));
+            int newStep = currentStep - 1, newAlter = AccIdToAlter(note->GetDrawingAccid());
+            transposeTpc(tpc, interval, false, newStep, newAlter);
+
+            data_PITCHNAME newPname = static_cast<data_PITCHNAME>((newStep % 7) + 1);
+
+            int newOct = 0;
+            int newPitchNumber = (PitchFromPname(newPname) + newAlter);
+            while (newPitchNumber < 0)
+            {
+                newPitchNumber += 12;
+                newOct++;
+            }
+            if (newPitchNumber % 12 != pitchNumber % 12)
+                assert(newPitchNumber % 12 == pitchNumber % 12);
+
+            while (newPitchNumber != pitchNumber)
+            {
+                newPitchNumber += 12;
+                newOct++;
+            }
+
+            note->SetPname(newPname);
+
+            Accid *accid = note->GetDrawingAccid();
+            if (accid)
+            {
+                note->DeleteChild(accid);
+            }
+            if (newAlter != 0)
+            {
+                accid = new Accid();
+                accid->SetAccidGes(AlterToAccId(newAlter));
+                note->AddChild(accid);
+            }
+
+            note->SetOct(newOct);
         }
 
         return true;

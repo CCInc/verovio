@@ -415,9 +415,10 @@ int main(int argc, char **argv)
         }
     }
 
-	/// INSERT DEBUG CODE HERE
-	toolkit.TransposeKey(0);
-	//vrv::Transpose::transpose(&m_doc, newFifths);
+	/// INSERT DEBUG CODE HERE1
+	toolkit.SetHeader("titel", "sub", "comp", "arr");
+	toolkit.SetScoreBasedMei(true);
+        toolkit.ChangeInstrument("", "");
 
     int from = page;
     int to = page + 1;

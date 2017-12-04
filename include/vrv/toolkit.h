@@ -401,6 +401,7 @@ public:
     bool Set(std::string elementId, std::string attrType, std::string attrValue);
 	bool TransposeKey(int newFifths);
 	std::string GetInstruments();
+	bool ChangeInstrument(std::string elementId, std::string json_newInstrument);
     ///@}
 
 private:

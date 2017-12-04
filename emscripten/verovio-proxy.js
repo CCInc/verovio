@@ -51,6 +51,9 @@ verovio.vrvToolkit.getKeySignature = Module.cwrap('vrvToolkit_getKeySignature', 
 // const char *getInstruments(Toolkit *tk)
 verovio.vrvToolkit.getInstruments = Module.cwrap('vrvToolkit_getInstruments', 'string', ['number']);
 
+// const char *changeInstrument(Toolkit *tk, const char *elementId, const char *json_newInstrument)
+verovio.vrvToolkit.changeInstrument = Module.cwrap('vrvToolkit_changeInstrument', 'string', ['number', 'string', 'string']);
+
 // void redoLayout(Toolkit *ic)
 verovio.vrvToolkit.redoLayout = Module.cwrap('vrvToolkit_redoLayout', null, ['number']);
 
@@ -190,6 +193,10 @@ verovio.toolkit.prototype.getKeySignature = function () {
 
 verovio.toolkit.prototype.getInstruments = function () {
 	return JSON.parse(verovio.vrvToolkit.getInstruments(this.ptr));
+};
+
+verovio.toolkit.prototype.changeInstrument = function (scoreId, newInstrument) {
+	return verovio.vrvToolkit.changeInstrument(this.ptr, scoreId, JSON.stringify(newInstrument));
 };
 
 /***************************************************************************************************************************/

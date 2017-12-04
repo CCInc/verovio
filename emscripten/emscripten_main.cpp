@@ -156,4 +156,13 @@ const char *vrvToolkit_getInstruments(Toolkit *tk)
 	tk->SetCString(tk->GetInstruments());
 	return tk->GetCString();
 }
+
+bool vrvToolkit_changeInstrument(Toolkit *tk, const char *elementId, const char *json_newInstrument)
+{    
+	if (!tk->ChangeInstrument(elementId, json_newInstrument)) {
+        LogError("Could not change instrument.");
+		return false;
+    }
+	return true;
+}
 }

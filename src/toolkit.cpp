@@ -14,6 +14,7 @@
 //----------------------------------------------------------------------------
 
 #include "attcomparison.h"
+#include "attconverter.h"
 #include "iodarms.h"
 #include "iohumdrum.h"
 #include "iomei.h"
@@ -1016,7 +1017,7 @@ std::string Toolkit::GetInstruments()
 	ScoreDef scoreDef = m_doc.m_scoreDef;
 	StaffGrp *topStaffGrp = dynamic_cast<StaffGrp *>(scoreDef.FindChildByType(STAFFGRP));
 
-	jsonxx::Object output = GetStaffGrp(topStaffGrp);
+        jsonxx::Object output = GetStaffGrp(topStaffGrp);
 	return output.json();
 #else
 	// The non-js version of the app should not use this function.
@@ -1029,9 +1030,10 @@ jsonxx::Object Toolkit::GetStaffGrp(StaffGrp *staffGrp)
 {
 	jsonxx::Object output;
 
+        output << "type" << "staffGrp";
 	if (staffGrp->HasMidiInstrname())
 	{
-		output << "instrName" << staffGrp->GetMidiInstrname();
+		output << "midi.instrname" << staffGrp->GetMidiInstrname();
 	}
 	if (staffGrp->HasLabel())
 	{
@@ -1039,17 +1041,18 @@ jsonxx::Object Toolkit::GetStaffGrp(StaffGrp *staffGrp)
 	}
 	output << "id" << staffGrp->GetUuid();
 
+        jsonxx::Array children;
 	int i;
-	StaffGrp *childStaffGrp = NULL;
-	for (i = 0; i < staffGrp->GetChildCount(); i++) {
-		Object *child = staffGrp->GetChild(i);
-		if (child->Is(STAFFGRP)) {
-			output << "staffGrp" << GetStaffGrp(dynamic_cast<StaffGrp *>(child));
-		}
-		else if (child->Is(STAFFDEF)) {
-			output << "staffDef" << GetStaffDef(dynamic_cast<StaffDef *>(child));
-		}
-	}
+        for (i = 0; i < staffGrp->GetChildCount(); i++) {
+            Object *child = staffGrp->GetChild(i);
+            if (child->Is(STAFFGRP)) {
+                children << GetStaffGrp(dynamic_cast<StaffGrp *>(child));
+            }
+            else if (child->Is(STAFFDEF)) {
+                children << GetStaffDef(dynamic_cast<StaffDef *>(child));
+            }
+        }
+        output << "children" << children;
 	return output;
 }
 
@@ -1057,9 +1060,10 @@ jsonxx::Object Toolkit::GetStaffDef(StaffDef *staffDef)
 {
 	jsonxx::Object output;
 
+        output << "type" << "staffDef";
 	if (staffDef->HasMidiInstrname())
 	{
-		output << "instrName" << staffDef->GetMidiInstrname();
+		output << "midi.instrname" << staffDef->GetMidiInstrname();
 	}
 	if (staffDef->HasLabel())
 	{
@@ -1070,6 +1074,367 @@ jsonxx::Object Toolkit::GetStaffDef(StaffDef *staffDef)
 	return output;
 }
 #endif
+
+bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstrument)
+{
+    // The non-js version of the app should not use this function.
+#if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
+    jsonxx::Object json;
+
+    // Read JSON options
+    if (!json.parse(json_newInstrument)) {
+        LogError("Can not parse JSON string.");
+        return false;
+    }
+
+    // changingPartObj is either a StaffGrp or StaffDef that the user passes in
+    Object *changingPartObj = m_doc.m_scoreDef.FindChildByUuid(elementId);
+    if (!changingPartObj) {
+        LogError("Cannot find element id!");
+        return false;
+    }
+    if (!changingPartObj->Is(STAFFDEF) && !changingPartObj->Is(STAFFGRP)) {
+        LogError("Element id is not a staffgrp or staffdef.");
+        return false;
+    }
+
+    if (json.has<jsonxx::Object>("partDefaults")) {
+        jsonxx::Object partDefaults = json.get<jsonxx::Object>("partDefaults");
+
+        // first, parse the staff element and store the staff data in the newStaffDefs array - includes clefs and TAB 
+        std::vector<StaffDef> newStaffDefs;
+        if (partDefaults.has<jsonxx::Object>("staff")) {
+            jsonxx::Object staffJson = partDefaults.get<jsonxx::Object>("staff");
+
+            std::vector<jsonxx::Object> newStavesJson;
+            if (staffJson.has<jsonxx::Object>("clef"))
+            {
+                jsonxx::Object clef = staffJson.get<jsonxx::Object>("clef");
+                newStavesJson.push_back(clef);
+            }
+            else if (staffJson.has<jsonxx::Array>("clef"))
+            {
+                jsonxx::Array clefArray = staffJson.get<jsonxx::Array>("clef");
+                int i;
+                for (i = 0; i < clefArray.size(); i++) {
+                    if (clefArray.has<jsonxx::Object>(i)) newStavesJson.push_back(clefArray.get<jsonxx::Object>(i));
+                }
+            }
+
+            // Go through each clef element on the staff element
+            std::vector<jsonxx::Object>::iterator staffObjectIter;
+            for (staffObjectIter = newStavesJson.begin(); staffObjectIter != newStavesJson.end(); staffObjectIter++) {
+                jsonxx::Object clefJson = *staffObjectIter;
+                StaffDef staffDef;
+                if (clefJson.has<jsonxx::String>("sign"))
+                {
+                    std::string clefSignStr = clefJson.get<jsonxx::String>("sign");
+                    // cast to a random attribute so that we can call the StrToClefshape method; doesn't matter which attribute
+                    AttCommonPart *att = dynamic_cast<AttCommonPart *>(&staffDef);
+                    data_CLEFSHAPE clefSign = att->StrToClefshape(clefSignStr);
+                    // set the clefshape to the new clef
+                    staffDef.SetClefShape(clefSign);
+
+                    // Set the defaults for each clef sign if not provided
+                    switch (clefSign)
+                    {
+                    case CLEFSHAPE_G:
+                        staffDef.SetClefLine(2);
+                        break;
+                    case CLEFSHAPE_GG:
+                        staffDef.SetClefLine(2);
+                        staffDef.SetClefDis(OCTAVE_DIS_8);
+                        staffDef.SetClefDisPlace(PLACE_below);
+                        break;
+                    case CLEFSHAPE_F:
+                        staffDef.SetClefLine(4);
+                        break;
+                    case CLEFSHAPE_C:
+                        break;
+                    case CLEFSHAPE_perc:
+                        staffDef.SetClefLine(3);
+                        break;
+                    case CLEFSHAPE_TAB:
+                        staffDef.SetClefLine(3);
+                        break;
+                    case CLEFSHAPE_NONE:
+                    default:
+                        break;
+                    }
+                }
+                // how many lines are actually displayed
+                if (clefJson.has<jsonxx::Number>("displayLineCount"))
+                {
+                    int displayLineCount = clefJson.get<jsonxx::Number>("displayLineCount");
+                    staffDef.SetLines(displayLineCount);
+                }
+                // which line the clef is on, ex. 2 for treble, 4 for bass
+                if (clefJson.has<jsonxx::Number>("line"))
+                {
+                    int line = clefJson.get<jsonxx::Number>("line");
+                    // add one to what is in the manifest
+                    staffDef.SetClefLine(line + 1);
+                }
+                // currently, verovio doens't really support tab, so I'll have to take out tab instruments
+                if (staffJson.has<jsonxx::Object>("staffTuning"))
+                {
+                    jsonxx::Object staffTuning = staffJson.get<jsonxx::Object>("staffTuning");
+                    if (staffTuning.has<jsonxx::Array>("note"))
+                    {
+                        jsonxx::Array staffNoteArray = staffTuning.get<jsonxx::Array>("note");
+                        int i;
+                        for (i = 0; i < staffNoteArray.size(); i++) {
+                            if (staffNoteArray.has<jsonxx::Number>(i)) {
+                                int midiNote = staffNoteArray.get<jsonxx::Number>(i);
+                                // TODO: TAB NOT IMPLEMENTED
+                            }
+                        }
+                    }
+                }
+                newStaffDefs.push_back(staffDef);
+            }
+        }
+
+        // Now, iterate through the existing staffDef elements
+        std::vector<StaffDef *> staffDefs;
+        if (changingPartObj->Is(STAFFDEF))
+        {
+            staffDefs.push_back(dynamic_cast<StaffDef *>(changingPartObj));
+        }
+        // if it's a staffgrp, get all the staffdefs inside of it
+        else if (changingPartObj->Is(STAFFGRP))
+        {
+            ArrayOfObjects staffDefObjs = changingPartObj->FindAllChildByType(STAFFDEF);
+            staffDefs.reserve(staffDefObjs.size());
+
+            ArrayOfObjects::iterator iter;
+            for (iter = staffDefObjs.begin(); iter != staffDefObjs.end(); iter++) {
+                staffDefs.push_back(dynamic_cast<StaffDef *>(*iter));
+            }
+        }
+
+        // iterate through the existing staffs and set new properties - transpose, clef, etc
+        std::vector<StaffDef *>::iterator iter;
+        for (iter = staffDefs.begin(); iter != staffDefs.end(); iter++) {
+            StaffDef *staffDef = *iter;
+
+            // First, we need to negate any existing transposition to bring the music back to concert pitch
+            Transpose::Interval *transpositionInterval = new Transpose::Interval();
+            if (staffDef->HasTransDiat() && staffDef->HasTransSemi())
+            {
+                transpositionInterval = new Transpose::Interval(staffDef->GetTransDiat(), staffDef->GetTransSemi());
+            }
+            else if (staffDef->HasTransSemi())
+            {
+                transpositionInterval = Transpose::Interval::FromPitches(staffDef->GetTransSemi());
+            }
+            // and then reset the part transposition
+            staffDef->ResetTransposition();
+
+            // TRANSPOSE
+            int transp = 0;
+            Transpose::Interval *partTranspose;
+            if (partDefaults.has<jsonxx::Number>("transp")) {
+                transp = partDefaults.get<jsonxx::Number>("transp");
+                // from nf
+                partTranspose = Transpose::Interval::FromPitches(-transp)->NormalizeTritone();
+                // set the part transposition so that the MIDI file will negate it and play it in concert pitch
+                staffDef->SetTransDiat(-partTranspose->GetDiatonic());
+                staffDef->SetTransSemi(-partTranspose->GetChromatic());
+            }
+
+            // UPDATE STAFFDEF
+            StaffDef newStaffDef;
+
+            int index = std::distance(staffDefs.begin(), iter);
+            // If there's a new staff to match the old staff, then get the new staff
+            if (index < newStaffDefs.size())
+            {
+                newStaffDef = newStaffDefs[index];
+            }
+            // Else if you're going from, ex, 2 staves to 1, then just get the last new staff
+            else if (!newStaffDefs.empty())
+            {
+                newStaffDef = newStaffDefs.back();
+            }
+            // This should never happen because every instrument should have at least one staff
+            else
+            {
+                LogWarning("No new clefs!");
+                return false;
+            }
+
+            StaffDef *updatedStaffDef = m_doc.m_scoreDef.GetStaffDef(staffDef->GetN());
+            // reset the staffdef clef to begin with so that no values are left over
+            updatedStaffDef->ResetCleffingLog();
+            // update the old clef to the new clef
+            if (newStaffDef.HasClefShape())
+            {
+                updatedStaffDef->SetClefShape(newStaffDef.GetClefShape());
+            }
+            if (newStaffDef.HasClefLine())
+            {
+                updatedStaffDef->SetClefLine(newStaffDef.GetClefLine());
+            }
+            if (newStaffDef.HasClefDis())
+            {
+                updatedStaffDef->SetClefDis(newStaffDef.GetClefDis());
+            }
+            if (newStaffDef.HasClefDisPlace())
+            {
+                updatedStaffDef->SetClefDisPlace(newStaffDef.GetClefDisPlace());
+            }
+            if (newStaffDef.HasLines())
+            {
+                updatedStaffDef->SetLines(newStaffDef.GetLines());
+            }
+
+            // Automatically transpose the old notes to be within the comf or pro range of the new part 
+            if (partDefaults.has<jsonxx::Number>("comfHigh") && partDefaults.has<jsonxx::Number>("comfLow") &&
+                partDefaults.has<jsonxx::Number>("proHigh") && partDefaults.has<jsonxx::Number>("proLow")) 
+            {
+                int comfHigh = partDefaults.get<jsonxx::Number>("comfHigh") - 12;
+                int comfLow = partDefaults.get<jsonxx::Number>("comfLow") - 12;
+                int proHigh = partDefaults.get<jsonxx::Number>("proHigh") - 12;
+                int proLow = partDefaults.get<jsonxx::Number>("proLow") - 12;
+
+                // If there's more than one new and old staff, then we consider it a multiStaff
+                // because if you're going from 1 to 2, then I have no clue how that's gonna work
+                // and if you're going from 2 to 1, then you want it to be transposed like one part
+                bool multiStaff = staffDefs.size() > 1 && newStaffDefs.size() > 1;
+                int octaveTransposition = m_transpose->GetPartTransposition(*transpositionInterval, *staffDef, comfHigh, comfLow, proHigh, proLow, multiStaff);
+                octaveTransposition /= 12; // get the number of octaves from the chromatic interval
+                transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + (octaveTransposition * 7), transpositionInterval->GetChromatic() + (octaveTransposition * 12));
+            }
+
+            if (partDefaults.has<jsonxx::Number>("oct")) {
+                int oct = partDefaults.get<jsonxx::Number>("oct");
+                // have to reverse it, idk why but it works that way
+                oct = -oct;
+                // from nf
+                transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + (oct * 7), transpositionInterval->GetChromatic() + (oct * 12));
+                // Have to set this in it's own property, NOT on transSemi, because we don't want the octave to be negated because then it'll be too far in the opposite direction
+                staffDef->SetTransOct(-oct);
+            }
+
+            // Combine the part 'transp' and the 'oct'/auto-transpose intervals
+            transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + partTranspose->GetDiatonic(),
+                transpositionInterval->GetChromatic() + partTranspose->GetChromatic());
+
+            // actually do the transposition now that we have everything in one place
+            m_transpose->transposeInterval(*transpositionInterval, *staffDef);
+        }
+
+        // List of staffdefs or staffgrps we're going to assign name, midi, etc too. Not necessarily the same one we started with, because...
+        std::vector<Object *> changingPartObjs;
+        // If tehre's more old staves than new staves, then that means we have to break up some staffGrp's, because we don't want them to be tied together forever
+        if (staffDefs.size() > newStaffDefs.size())
+        {
+            StaffDef *firstStaffDef = staffDefs.front();
+            Object *parent = firstStaffDef->GetParent();
+
+            // Main StaffGrp
+            Object *mainStaffGrp = parent->GetParent();
+
+            if (parent->Is(STAFFGRP) && parent != mainStaffGrp)
+            {
+                for (int i = newStaffDefs.size() - 1; i != staffDefs.size(); ++i)
+                {
+                    StaffDef *staffDef = staffDefs[i];
+                    StaffDef *updatedStaffDef = m_doc.m_scoreDef.GetStaffDef(staffDef->GetN());
+                    // not sure if all this is necessary or best
+                    Object *updatedParent = updatedStaffDef->GetParent();
+
+                    if (updatedParent->Is(STAFFGRP))
+                    {
+                        StaffGrp *staffGrp = dynamic_cast<StaffGrp *>(updatedParent);
+                        staffGrp->ResetCommonPart();
+                        staffGrp->ResetLabelsAddl();
+                        staffGrp->ResetStaffgroupingsym();
+                        staffGrp->ResetMidiinstrument();
+
+                        // Instead of actually breaking up the staffgrp's tho (below), we're going to just reset the labels and the staffgrp symbol (above)
+                        // so that the system doesn't register as being an actual part
+
+                //        if (updatedParent->HasChild(updatedStaffDef, 0))
+                //        {
+                //            updatedParent->DetachChild(updatedParent->GetChildIndex(updatedStaffDef));
+                //        }
+                //        else
+                //            LogWarning("Parent isn't child");
+
+                //        updatedStaffDef->SetParent(mainStaffGrp);
+
+                //        int index = mainStaffGrp->GetChildIndex(updatedParent);
+                //        if (index == -1) {
+                //            index = 0;
+                //            LogWarning("StaffDef parent wasn't found!");
+                //        }
+                //        mainStaffGrp->InsertChild(updatedStaffDef, index);
+
+                        changingPartObjs.push_back(updatedStaffDef);
+                    }
+                    else
+                        LogWarning("StaffDef parent isn't staffgrp!2");
+                }
+            }
+            else
+                LogWarning("StaffDef parent isn't staffgrp!");
+        }
+        else
+        {
+            changingPartObjs.push_back(changingPartObj);
+        }
+
+        // Apply the labels, midiId, etc to the new staffs
+        std::vector<Object *>::iterator changingPartObjIter;
+        for (changingPartObjIter = changingPartObjs.begin(); changingPartObjIter != changingPartObjs.end(); changingPartObjIter++)
+        {
+            Object *changingObj = *changingPartObjIter;
+
+            if (json.has<jsonxx::String>("name")) {
+                std::string name = json.get<jsonxx::String>("name");
+                AttCommonPart *att = dynamic_cast<AttCommonPart *>(changingObj);
+                att->SetLabel(name);
+            }
+
+            if (json.has<jsonxx::String>("shortName")) {
+                std::string shortName = json.get<jsonxx::String>("shortName");
+                AttLabelsAddl *att = dynamic_cast<AttLabelsAddl *>(changingObj);
+                att->SetLabelAbbr(shortName);
+            }
+
+            if (json.has<jsonxx::String>("id")) {
+                std::string instrumentId = json.get<jsonxx::String>("id");
+                AttMidiinstrument *att = dynamic_cast<AttMidiinstrument *>(changingObj);
+                att->SetMidiInstrname(instrumentId);
+            }
+
+            if (json.has<jsonxx::Number>("midiProg")) {
+                int midiProg = json.get<jsonxx::Number>("midiProg");
+                AttMidiinstrument *att = dynamic_cast<AttMidiinstrument *>(changingObj);
+                att->SetMidiInstrnum(midiProg);
+            }
+            // some instruments have multiple midiProg's, for now, just take the first one
+            if (json.has<jsonxx::Array>("midiProg")) {
+                jsonxx::Array midiProgArr = json.get<jsonxx::Array>("midiProg");
+                if (midiProgArr.has<jsonxx::Number>(0)) {
+                    int midiProg = midiProgArr.get<jsonxx::Number>(0);
+                    AttMidiinstrument *att = dynamic_cast<AttMidiinstrument *>(changingObj);
+                    att->SetMidiInstrnum(midiProg);
+                }
+            }
+        }
+    }
+
+    m_doc.UnCastOffDoc();
+    m_doc.CastOffDoc();
+    return true;
+#endif
+    
+    int octaveTransposition = m_transpose->GetPartTransposition(Transpose::Interval(), *m_doc.m_scoreDef.GetStaffDef(1), 71 - 12, 48 - 12, 77 - 12, 28 - 12, false);
+    return false;
+}
 
 bool Toolkit::RenderToMidiFile(const std::string &filename)
 {
