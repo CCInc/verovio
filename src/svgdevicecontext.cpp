@@ -396,8 +396,8 @@ void SvgDeviceContext::SetBackground(int colour, int style)
 
 void SvgDeviceContext::SetBackgroundImage(std::string data, double opacity)
 {
-	m_backgroundData = data;
-	m_backgroundOpacity = opacity;
+    m_backgroundData = data;
+    m_backgroundOpacity = opacity;
 }
 
 void SvgDeviceContext::SetBackgroundMode(int mode)
@@ -773,25 +773,25 @@ void SvgDeviceContext::DrawSpline(int n, Point points[])
 
 void SvgDeviceContext::DrawBackgroundImage(int x, int y, double width, double height)
 {
-	std::string widthStr = "100%";
-	std::string heightStr = "100%";
-	if (height != -1)
-	{
-		heightStr = StringFormat("%dpx", (int)((double)height));
-	}
-	if (width != -1)
-	{
-		widthStr = StringFormat("%dpx", (int)((double)width));
-	}
+    std::string widthStr = "100%";
+    std::string heightStr = "100%";
+    if (height != -1)
+    {
+        heightStr = StringFormat("%dpx", (int)((double)height));
+    }
+    if (width != -1)
+    {
+        widthStr = StringFormat("%dpx", (int)((double)width));
+    }
 
-	pugi::xml_node imgChild = AppendChild("image");
-	imgChild.append_attribute("x") = x;
-	imgChild.append_attribute("y") = y;
-	imgChild.append_attribute("height") = heightStr.c_str();
-	imgChild.append_attribute("width") = widthStr.c_str();
-	imgChild.append_attribute("xlink:href") = m_backgroundData.c_str();
-	imgChild.append_attribute("opacity") = m_backgroundOpacity;
-	imgChild.append_attribute("id") = "scoreBackgroundImage";
+    pugi::xml_node imgChild = AppendChild("image");
+    imgChild.append_attribute("x") = x;
+    imgChild.append_attribute("y") = y;
+    imgChild.append_attribute("height") = heightStr.c_str();
+    imgChild.append_attribute("width") = widthStr.c_str();
+    imgChild.append_attribute("xlink:href") = m_backgroundData.c_str();
+    imgChild.append_attribute("opacity") = m_backgroundOpacity;
+    imgChild.append_attribute("id") = "scoreBackgroundImage";
 }
 
 std::string SvgDeviceContext::GetColour(int colour)

@@ -391,7 +391,7 @@ StaffGrp::StaffGrp()
     , AttStaffgroupingsym()
     , AttStaffGrpVis()
     , AttTyped()
-	, AttMidiinstrument()
+    , AttMidiinstrument()
 {
     RegisterAttClass(ATT_COMMON);
     RegisterAttClass(ATT_COMMONPART);
@@ -399,7 +399,7 @@ StaffGrp::StaffGrp()
     RegisterAttClass(ATT_STAFFGROUPINGSYM);
     RegisterAttClass(ATT_STAFFGRPVIS);
     RegisterAttClass(ATT_TYPED);
-	RegisterAttClass(ATT_MIDIINSTRUMENT);
+    RegisterAttClass(ATT_MIDIINSTRUMENT);
 
     Reset();
 }
@@ -468,7 +468,7 @@ StaffDef::StaffDef()
     , AttScalable()
     , AttStaffDefVis()
     , AttTransposition()
-	, AttMidiinstrument()
+    , AttMidiinstrument()
 {
     RegisterAttClass(ATT_COMMON);
     RegisterAttClass(ATT_COMMONPART);
@@ -478,7 +478,7 @@ StaffDef::StaffDef()
     RegisterAttClass(ATT_SCALABLE);
     RegisterAttClass(ATT_STAFFDEFVIS);
     RegisterAttClass(ATT_TRANSPOSITION);
-	RegisterAttClass(ATT_MIDIINSTRUMENT);
+    RegisterAttClass(ATT_MIDIINSTRUMENT);
 
     Reset();
 }

@@ -201,20 +201,20 @@ public:
     int GetScale() { return m_scale; }
     ///@}
 
-	/**
-	* @name Set and get the page background; either a base64 encoded image or a url
-	*/
-	///@{
-	bool SetBackgroundData(const std::string data);
-	///@}
+    /**
+    * @name Set and get the page background; either a base64 encoded image or a url
+    */
+    ///@{
+    bool SetBackgroundData(const std::string data);
+    ///@}
 
-	/**
-	* @name Set and get the page background opacity
-	*/
-	///@{
-	bool SetBackgroundOpacity(float opacity);
-	float GetBackgroundOpacity() { return m_backgroundOpacity; }
-	///@}
+    /**
+    * @name Set and get the page background opacity
+    */
+    ///@{
+    bool SetBackgroundOpacity(float opacity);
+    float GetBackgroundOpacity() { return m_backgroundOpacity; }
+    ///@}
 
     /**
      * @name Set and get the page height (in pixels)
@@ -308,7 +308,7 @@ public:
     int GetNoJustification() { return m_noJustification; }
     ///@}
 
-	void SetHeader(std::string title, std::string subtitle, std::string composer, std::string arrangement);
+    void SetHeader(std::string title, std::string subtitle, std::string composer, std::string arrangement);
 
     /**
      * @name Do not justify the system (for debugging purposes)
@@ -399,9 +399,9 @@ public:
     bool Drag(std::string elementId, int x, int y);
     bool Insert(std::string elementType, std::string startId, std::string endId);
     bool Set(std::string elementId, std::string attrType, std::string attrValue);
-	bool TransposeKey(int newFifths);
-	std::string GetInstruments();
-	bool ChangeInstrument(std::string elementId, std::string json_newInstrument);
+    bool TransposeKey(int newFifths);
+    std::string GetInstruments();
+    bool ChangeInstrument(std::string elementId, std::string json_newInstrument);
     ///@}
 
 private:
@@ -431,7 +431,7 @@ private:
     Doc m_doc;
     View m_view;
     int m_scale;
-	Transpose *m_transpose;
+    Transpose *m_transpose;
     FileFormat m_format;
     FileFormat m_outformat;
 
@@ -441,8 +441,8 @@ private:
     /** given in units **/
     int m_spacingStaff;
     int m_spacingSystem;
-	std::string m_backgroundData;
-	float m_backgroundOpacity;
+    std::string m_backgroundData;
+    float m_backgroundOpacity;
 
     bool m_noLayout;
     bool m_ignoreLayout;

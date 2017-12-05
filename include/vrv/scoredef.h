@@ -227,7 +227,7 @@ class StaffGrp : public Object,
                  public AttStaffgroupingsym,
                  public AttStaffGrpVis,
                  public AttTyped,
-				 public AttMidiinstrument {
+                 public AttMidiinstrument {
 public:
     /**
      * @name Constructors, destructors, and other standard methods
@@ -283,7 +283,7 @@ class StaffDef : public ScoreDefElement,
                  public AttScalable,
                  public AttStaffDefVis,
                  public AttTransposition,
-				 public AttMidiinstrument {
+                 public AttMidiinstrument {
 public:
     /**
      * @name Constructors, destructors, and other standard methods

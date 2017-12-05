@@ -102,7 +102,7 @@ public:
      * The checker returns true if the attribute class is set (e.g., not equal
      * to the default value)
      **/
-    ///@{
+     ///@{
     void SetMidiInstrnum(data_MIDIVALUE midiInstrnum_) { m_midiInstrnum = midiInstrnum_; }
     data_MIDIVALUE GetMidiInstrnum() const { return m_midiInstrnum; }
     bool HasMidiInstrnum() const;
@@ -124,7 +124,7 @@ private:
     /** Sets the MIDI instrument number. **/
     data_MIDIVALUE m_midiInstrnum;
     /** Provides a General MIDI label for the MIDI instrument. **/
-	std::string m_midiInstrname;
+    std::string m_midiInstrname;
     /**
      * Sets the instrument's position in a stereo field.
      * Values of 0 and 1 both pan left, 127 pans right, and 64 pans to the center.

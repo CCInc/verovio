@@ -148,7 +148,7 @@ bool AttMidiinstrument::ReadMidiinstrument(pugi::xml_node element)
     }
     if (element.attribute("midi.instrname")) {
         //this->SetMidiInstrname(StrToMidinames(element.attribute("midi.instrname").value()));
-		this->SetMidiInstrname(element.attribute("midi.instrname").value());
+        this->SetMidiInstrname(element.attribute("midi.instrname").value());
         element.remove_attribute("midi.instrname");
         hasAttribute = true;
     }

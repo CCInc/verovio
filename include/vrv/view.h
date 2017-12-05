@@ -178,8 +178,8 @@ protected:
     void DrawStaff(DeviceContext *dc, Staff *staff, Measure *measure, System *system);
     void DrawStaffLines(DeviceContext *dc, Staff *staff, Measure *measure, System *system);
     void DrawLayer(DeviceContext *dc, Layer *layer, Staff *staff, Measure *measure);
-    void DrawLayerList(DeviceContext *dc, Layer *layer, Staff *staff, Measure *measure, const ClassId classId); 
-	void DrawHeader(DeviceContext * dc);
+    void DrawLayerList(DeviceContext *dc, Layer *layer, Staff *staff, Measure *measure, const ClassId classId);
+    void DrawHeader(DeviceContext *dc);
     ///@}
 
     /**
@@ -465,7 +465,7 @@ private:
      */
     int GetNearestInterStaffPosition(int y, Staff *staff, data_STAFFREL place);
 
-	void GetTextHeightWidth(std::string wtext, DeviceContext * dc, int *m_textHeight, int *m_textWidth);
+    void GetTextHeightWidth(std::string wtext, DeviceContext *dc, int *m_textHeight, int *m_textWidth);
 public:
     /** Document */
     Doc *m_doc;

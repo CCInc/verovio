@@ -192,8 +192,8 @@ private:
     int m_originX, m_originY;
     double m_userScaleX, m_userScaleY;
 
-	std::string m_backgroundData;
-	int m_backgroundOpacity;
+    std::string m_backgroundData;
+    int m_backgroundOpacity;
 
     // holds the list of glyphs from the smufl font used so far
     // they will be added at the end of the file as <defs>

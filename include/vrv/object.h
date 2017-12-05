@@ -336,7 +336,7 @@ public:
      * Look for all children with the specified type (returns NULL if not found)
      * This method is a wrapper for the Object::FindByType functor.
      */
-	ArrayOfObjects FindAllChildByType(ClassId classId, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
+    ArrayOfObjects FindAllChildByType(ClassId classId, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
 
     /**
      * Return the first element matching the AttComparison functor
@@ -357,7 +357,7 @@ public:
      * Deepness allow to limit the depth search (EditorialElements are not count)
      */
     void FindAllChildByAttComparison(ArrayOfObjects *objects, AttComparison *attComparison,
-        int deepness = UNLIMITED_DEPTH, bool direction = FORWARD, bool clear = true);
+                                     int deepness = UNLIMITED_DEPTH, bool direction = FORWARD, bool clear = true);
 
     /**
      * Give up ownership of the child at the idx position (NULL if not found)
@@ -437,7 +437,8 @@ public:
      * limit (EditorialElement objects do not count).
      */
     virtual void Process(Functor *functor, FunctorParams *functorParams, Functor *endFunctor = NULL,
-        ArrayOfAttComparisons *filters = NULL, int deepness = UNLIMITED_DEPTH, bool direction = FORWARD);
+                         ArrayOfAttComparisons *filters = NULL, int deepness = UNLIMITED_DEPTH,
+                         bool direction = FORWARD);
 
     //----------//
     // Functors //

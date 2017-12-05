@@ -67,7 +67,7 @@ Toolkit::Toolkit(bool initFont)
     m_evenNoteSpacing = false;
     m_showBoundingBoxes = false;
     m_scoreBasedMei = false;
-	m_backgroundOpacity = 1.0;
+    m_backgroundOpacity = 1.0;
 
     m_cString = NULL;
     m_humdrumBuffer = NULL;
@@ -97,20 +97,20 @@ bool Toolkit::SetResourcePath(const std::string &path)
 
 bool Toolkit::SetBackgroundData(const std::string data)
 {
-	m_backgroundData = data;
-	return true;
+    m_backgroundData = data;
+    return true;
 };
 
 bool Toolkit::SetBackgroundOpacity(float opacity)
 {
-	if (opacity < 0 || opacity > 1.0) {
-		LogError("Opacity out of bounds; default is %d, minimum is %d, and maximum is %d", 1.0,
-			0.0, 1.0);
-		return false;
-	}
+    if (opacity < 0 || opacity > 1.0) {
+        LogError("Opacity out of bounds; default is %d, minimum is %d, and maximum is %d", 1.0,
+                 0.0, 1.0);
+        return false;
+    }
 
-	m_backgroundOpacity = opacity;
-	return true;
+    m_backgroundOpacity = opacity;
+    return true;
 };
 
 bool Toolkit::SetBorder(int border)
@@ -204,14 +204,14 @@ bool Toolkit::SetSpacingNonLinear(float spacingNonLinear)
 
 void Toolkit::SetHeader(std::string title, std::string subtitle, std::string composer, std::string arrangement)
 {
-	m_doc.m_title = title;
-	m_doc.m_subtitle = subtitle;
-	m_doc.m_composer = composer;
-	m_doc.m_arrangement = arrangement;
+    m_doc.m_title = title;
+    m_doc.m_subtitle = subtitle;
+    m_doc.m_composer = composer;
+    m_doc.m_arrangement = arrangement;
 
-	// Have to re-cast off the doc so that there is no system overflow due to the new header
-	m_doc.UnCastOffDoc();
-	m_doc.CastOffDoc();
+    // Have to re-cast off the doc so that there is no system overflow due to the new header
+    m_doc.UnCastOffDoc();
+    m_doc.CastOffDoc();
 }
 
 bool Toolkit::SetOutputFormat(std::string const &outformat)
@@ -588,14 +588,14 @@ bool Toolkit::LoadData(const std::string &data)
 
     delete input;
     m_view.SetDoc(&m_doc);
-	m_transpose = new Transpose(&m_doc);
+    m_transpose = new Transpose(&m_doc);
 
     return true;
 }
 
 std::string Toolkit::GetMEI(int pageNo, bool scoreBased)
 {
-	m_doc.m_header.reset();
+    m_doc.m_header.reset();
     // Page number is one-based - correct it to 0-based first
     pageNo--;
 
@@ -896,7 +896,7 @@ std::string Toolkit::RenderToSvg(int pageNo, bool xml_declaration)
     // debug BB?
     svg.SetDrawBoundingBoxes(m_showBoundingBoxes);
 
-	svg.SetBackgroundImage(m_backgroundData, m_backgroundOpacity);
+    svg.SetBackgroundImage(m_backgroundData, m_backgroundOpacity);
 
     // render the page
     m_view.DrawCurrentPage(&svg, false);
@@ -1011,7 +1011,7 @@ std::string Toolkit::GetKeySignature()
 #endif
 }
 
-std::string Toolkit::GetInstruments() 
+std::string Toolkit::GetInstruments()
 {
 #if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
 	ScoreDef scoreDef = m_doc.m_scoreDef;
@@ -1020,8 +1020,8 @@ std::string Toolkit::GetInstruments()
         jsonxx::Object output = GetStaffGrp(topStaffGrp);
 	return output.json();
 #else
-	// The non-js version of the app should not use this function.
-	return "";
+    // The non-js version of the app should not use this function.
+    return "";
 #endif
 }
 
@@ -1431,8 +1431,9 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
     m_doc.CastOffDoc();
     return true;
 #endif
-    
-    int octaveTransposition = m_transpose->GetPartTransposition(Transpose::Interval(), *m_doc.m_scoreDef.GetStaffDef(1), 71 - 12, 48 - 12, 77 - 12, 28 - 12, false);
+
+    int octaveTransposition = m_transpose->GetPartTransposition(Transpose::Interval(), *m_doc.m_scoreDef.GetStaffDef(1),
+                                                                71 - 12, 48 - 12, 77 - 12, 28 - 12, false);
     return false;
 }
 
@@ -1644,7 +1645,7 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
 
 bool Toolkit::TransposeKey(int newFifths)
 {
-	return m_transpose->transposeFifths(newFifths);
+    return m_transpose->transposeFifths(newFifths);
 }
 
 #ifdef USE_EMSCRIPTEN

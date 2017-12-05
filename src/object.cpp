@@ -366,9 +366,9 @@ Object *Object::FindChildByType(ClassId classId, int deepness, bool direction)
 ArrayOfObjects Object::FindAllChildByType(ClassId classId, int deepness, bool direction)
 {
     AttComparison attComparison(classId);
-	ArrayOfObjects objects;
-	FindAllChildByAttComparison(&objects, &attComparison, deepness, direction);
-	return objects;
+    ArrayOfObjects objects;
+    FindAllChildByAttComparison(&objects, &attComparison, deepness, direction);
+    return objects;
 }
 
 Object *Object::FindChildByAttComparison(AttComparison *attComparison, int deepness, bool direction)

@@ -67,17 +67,16 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
     Point origin = dc->GetLogicalOrigin();
     dc->SetLogicalOrigin(origin.x - m_doc->m_drawingPageLeftMar, origin.y - m_doc->m_drawingPageTopMar);
 
-	dc->StartPage();
+    dc->StartPage();
 
-	double pageWidth = m_doc->m_drawingPageWidth - (m_doc->m_drawingPageLeftMar + m_doc->m_drawingPageRightMar);
-	double pageHeight = m_doc->m_drawingPageHeight - (m_doc->m_drawingPageTopMar * 2);
-	dc->DrawBackgroundImage(0, 0, pageWidth, pageHeight);
+    double pageWidth = m_doc->m_drawingPageWidth - (m_doc->m_drawingPageLeftMar + m_doc->m_drawingPageRightMar);
+    double pageHeight = m_doc->m_drawingPageHeight - (m_doc->m_drawingPageTopMar * 2);
+    dc->DrawBackgroundImage(0, 0, pageWidth, pageHeight);
 
-	// Only render the header on the first page
-	if (m_pageIdx == 0)
-	{
-		DrawHeader(dc);
-	}
+    // Only render the header on the first page
+    if (m_pageIdx == 0) {
+        DrawHeader(dc);
+    }
 
     for (i = 0; i < m_currentPage->GetSystemCount(); i++) {
         // cast to System check in DrawSystem
@@ -90,118 +89,118 @@ void View::DrawCurrentPage(DeviceContext *dc, bool background)
 
 void View::DrawHeader(DeviceContext *dc)
 {
-	assert(dc);
+    assert(dc);
 
-	std::string wtext = "hello";
+    std::string wtext = "hello";
 
-	AnchoredText *text = new AnchoredText();
-	text->SetUuid("header");
+    AnchoredText *text = new AnchoredText();
+    text->SetUuid("header");
 
-	FontInfo dirTxt;
-	bool setX = false;
-	bool setY = false;
-	int textHeight, textWidth;
-	int textMargin = m_doc->GetDrawingStaffSize(100) / 2;
+    FontInfo dirTxt;
+    bool setX = false;
+    bool setY = false;
+    int textHeight, textWidth;
+    int textMargin = m_doc->GetDrawingStaffSize(100) / 2;
 
-	Staff *staff = static_cast<Staff*>(m_doc->FindChildByType(STAFF));
-	int fontSize = m_doc->GetDrawingLyricFont(100)->GetPointSize();
+    Staff *staff = static_cast<Staff*>(m_doc->FindChildByType(STAFF));
+    int fontSize = m_doc->GetDrawingLyricFont(100)->GetPointSize();
 
-	dc->SetBrush(m_currentColour, AxSOLID);
-	dc->SetFont(&dirTxt);
+    dc->SetBrush(m_currentColour, AxSOLID);
+    dc->SetFont(&dirTxt);
 
-	dc->StartGraphic(text, "", text->GetUuid());
+    dc->StartGraphic(text, "", text->GetUuid());
 
-	float y = 0;// m_doc->m_drawingPageTopMar;
-	float middleOfPageX = m_doc->m_drawingPageWidth / 2 - m_doc->m_drawingPageLeftMar;
-	float leftX = 0;
-	float rightX = m_doc->m_drawingPageWidth - m_doc->m_drawingPageLeftMar - m_doc->m_drawingPageRightMar;
-	
-	// TITLE
-	dirTxt.SetPointSize(fontSize * 2);
-	//dirTxt.SetWeight(FONTWEIGHT_bold);
+    float y = 0;// m_doc->m_drawingPageTopMar;
+    float middleOfPageX = m_doc->m_drawingPageWidth / 2 - m_doc->m_drawingPageLeftMar;
+    float leftX = 0;
+    float rightX = m_doc->m_drawingPageWidth - m_doc->m_drawingPageLeftMar - m_doc->m_drawingPageRightMar;
 
-	Text *titleText = new Text();
-	titleText->SetUuid("header-title");
+    // TITLE
+    dirTxt.SetPointSize(fontSize * 2);
+    //dirTxt.SetWeight(FONTWEIGHT_bold);
 
-	titleText->SetText(UTF8to16(m_doc->m_title));
-	text->AddChild(titleText);
+    Text *titleText = new Text();
+    titleText->SetUuid("header-title");
 
-	GetTextHeightWidth(m_doc->m_title, dc, &textHeight, &textWidth);
+    titleText->SetText(UTF8to16(m_doc->m_title));
+    text->AddChild(titleText);
 
-	y += textHeight;
-	dc->StartText(middleOfPageX, y, CENTER);
+    GetTextHeightWidth(m_doc->m_title, dc, &textHeight, &textWidth);
 
-	DrawText(dc, titleText, 0, 0, setX, setY);
-	dc->EndText();
+    y += textHeight;
+    dc->StartText(middleOfPageX, y, CENTER);
 
-	// SUBTITLE
-	dirTxt.SetPointSize(fontSize * 1.5);
+    DrawText(dc, titleText, 0, 0, setX, setY);
+    dc->EndText();
 
-	Text *subtitleText = new Text();
-	subtitleText->SetUuid("header-subtitle");
+    // SUBTITLE
+    dirTxt.SetPointSize(fontSize * 1.5);
 
-	subtitleText->SetText(UTF8to16(m_doc->m_subtitle));
-	text->AddChild(subtitleText);
+    Text *subtitleText = new Text();
+    subtitleText->SetUuid("header-subtitle");
 
-	GetTextHeightWidth(m_doc->m_subtitle, dc, &textHeight, &textWidth);
+    subtitleText->SetText(UTF8to16(m_doc->m_subtitle));
+    text->AddChild(subtitleText);
 
-	y += textMargin + textHeight;
-	dc->StartText(middleOfPageX, y, CENTER);
+    GetTextHeightWidth(m_doc->m_subtitle, dc, &textHeight, &textWidth);
 
-	DrawText(dc, subtitleText, 0, 0, setX, setY);
-	dc->EndText();
+    y += textMargin + textHeight;
+    dc->StartText(middleOfPageX, y, CENTER);
 
-	// ARRANGEMENT
-	dirTxt.SetPointSize(fontSize * 1.5);
+    DrawText(dc, subtitleText, 0, 0, setX, setY);
+    dc->EndText();
 
-	Text *arrText = new Text();
-	arrText->SetUuid("header-arrangement");
+    // ARRANGEMENT
+    dirTxt.SetPointSize(fontSize * 1.5);
 
-	arrText->SetText(UTF8to16(m_doc->m_arrangement));
-	text->AddChild(arrText);
+    Text *arrText = new Text();
+    arrText->SetUuid("header-arrangement");
 
-	GetTextHeightWidth(m_doc->m_arrangement, dc, &textHeight, &textWidth);
+    arrText->SetText(UTF8to16(m_doc->m_arrangement));
+    text->AddChild(arrText);
 
-	y += textMargin + textHeight;
-	dc->StartText(leftX, y, LEFT);
+    GetTextHeightWidth(m_doc->m_arrangement, dc, &textHeight, &textWidth);
 
-	DrawText(dc, arrText, 0, 0, setX, setY);
-	dc->EndText();
+    y += textMargin + textHeight;
+    dc->StartText(leftX, y, LEFT);
 
-	// COMPOSER
-	dirTxt.SetPointSize(fontSize * 1.5);
+    DrawText(dc, arrText, 0, 0, setX, setY);
+    dc->EndText();
 
-	Text *composerText = new Text();
-	composerText->SetUuid("header-composer");
+    // COMPOSER
+    dirTxt.SetPointSize(fontSize * 1.5);
 
-	composerText->SetText(UTF8to16(m_doc->m_composer));
-	text->AddChild(composerText);
+    Text *composerText = new Text();
+    composerText->SetUuid("header-composer");
 
-	GetTextHeightWidth(m_doc->m_composer, dc, &textHeight, &textWidth);
+    composerText->SetText(UTF8to16(m_doc->m_composer));
+    text->AddChild(composerText);
 
-	//y += textMargin + textHeight;
-	dc->StartText(rightX, y, RIGHT);
+    GetTextHeightWidth(m_doc->m_composer, dc, &textHeight, &textWidth);
 
-	DrawText(dc, composerText, 0, 0, setX, setY);
-	dc->EndText();
+    //y += textMargin + textHeight;
+    dc->StartText(rightX, y, RIGHT);
 
-	dc->ResetFont();
-	dc->ResetBrush();
+    DrawText(dc, composerText, 0, 0, setX, setY);
+    dc->EndText();
 
-	dc->EndGraphic(text, this);
+    dc->ResetFont();
+    dc->ResetBrush();
 
-	m_doc->m_drawingPageHeaderHeight = y;
+    dc->EndGraphic(text, this);
+
+    m_doc->m_drawingPageHeaderHeight = y;
 }
 
 void View::GetTextHeightWidth(std::string wtext, DeviceContext *dc, int *m_textHeight, int *m_textWidth)
 {
-	TextExtend extend;
-	dc->GetTextExtent(wtext, &extend);
-	*m_textWidth = extend.m_width;
-	// keep that maximum values for ascent and descent
-	int m_textAscent = std::max(0, extend.m_ascent);
-	int m_textDescent = std::max(0, extend.m_descent);
-	(*m_textHeight) = m_textAscent + m_textDescent;
+    TextExtend extend;
+    dc->GetTextExtent(wtext, &extend);
+    *m_textWidth = extend.m_width;
+    // keep that maximum values for ascent and descent
+    int m_textAscent = std::max(0, extend.m_ascent);
+    int m_textDescent = std::max(0, extend.m_descent);
+    (*m_textHeight) = m_textAscent + m_textDescent;
 }
 
 double View::GetPPUFactor() const
