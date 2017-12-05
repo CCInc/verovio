@@ -588,7 +588,7 @@ bool Toolkit::LoadData(const std::string &data)
 
     delete input;
     m_view.SetDoc(&m_doc);
-    m_transpose = new Transpose(&m_doc);
+    m_transpose.SetDoc(&m_doc);
 
     return true;
 }
@@ -1219,10 +1219,10 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
             StaffDef *staffDef = *iter;
 
             // First, we need to negate any existing transposition to bring the music back to concert pitch
-            Transpose::Interval *transpositionInterval = new Transpose::Interval();
+            Transpose::Interval transpositionInterval = Transpose::Interval();
             if (staffDef->HasTransDiat() && staffDef->HasTransSemi())
             {
-                transpositionInterval = new Transpose::Interval(staffDef->GetTransDiat(), staffDef->GetTransSemi());
+                transpositionInterval = Transpose::Interval(staffDef->GetTransDiat(), staffDef->GetTransSemi());
             }
             else if (staffDef->HasTransSemi())
             {
@@ -1233,14 +1233,14 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
 
             // TRANSPOSE
             int transp = 0;
-            Transpose::Interval *partTranspose;
+            Transpose::Interval partTranspose;
             if (partDefaults.has<jsonxx::Number>("transp")) {
                 transp = partDefaults.get<jsonxx::Number>("transp");
                 // from nf
-                partTranspose = Transpose::Interval::FromPitches(-transp)->NormalizeTritone();
+                partTranspose = Transpose::Interval::FromPitches(-transp).NormalizeTritone();
                 // set the part transposition so that the MIDI file will negate it and play it in concert pitch
-                staffDef->SetTransDiat(-partTranspose->GetDiatonic());
-                staffDef->SetTransSemi(-partTranspose->GetChromatic());
+                staffDef->SetTransDiat(-partTranspose.GetDiatonic());
+                staffDef->SetTransSemi(-partTranspose.GetChromatic());
             }
 
             // UPDATE STAFFDEF
@@ -1302,9 +1302,9 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
                 // because if you're going from 1 to 2, then I have no clue how that's gonna work
                 // and if you're going from 2 to 1, then you want it to be transposed like one part
                 bool multiStaff = staffDefs.size() > 1 && newStaffDefs.size() > 1;
-                int octaveTransposition = m_transpose->GetPartTransposition(*transpositionInterval, *staffDef, comfHigh, comfLow, proHigh, proLow, multiStaff);
+                int octaveTransposition = m_transpose.GetPartTransposition(transpositionInterval, *staffDef, comfHigh, comfLow, proHigh, proLow, multiStaff);
                 octaveTransposition /= 12; // get the number of octaves from the chromatic interval
-                transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + (octaveTransposition * 7), transpositionInterval->GetChromatic() + (octaveTransposition * 12));
+                transpositionInterval = Transpose::Interval(transpositionInterval.GetDiatonic()  + (octaveTransposition * 7), transpositionInterval.GetChromatic() + (octaveTransposition * 12));
             }
 
             if (partDefaults.has<jsonxx::Number>("oct")) {
@@ -1312,17 +1312,17 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
                 // have to reverse it, idk why but it works that way
                 oct = -oct;
                 // from nf
-                transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + (oct * 7), transpositionInterval->GetChromatic() + (oct * 12));
+                transpositionInterval = Transpose::Interval(transpositionInterval.GetDiatonic()  + (oct * 7), transpositionInterval.GetChromatic() + (oct * 12));
                 // Have to set this in it's own property, NOT on transSemi, because we don't want the octave to be negated because then it'll be too far in the opposite direction
                 staffDef->SetTransOct(-oct);
             }
 
             // Combine the part 'transp' and the 'oct'/auto-transpose intervals
-            transpositionInterval = new Transpose::Interval(transpositionInterval->GetDiatonic() + partTranspose->GetDiatonic(),
-                transpositionInterval->GetChromatic() + partTranspose->GetChromatic());
+            transpositionInterval = Transpose::Interval(transpositionInterval.GetDiatonic()  + partTranspose.GetDiatonic(),
+                transpositionInterval.GetChromatic() + partTranspose.GetChromatic());
 
             // actually do the transposition now that we have everything in one place
-            m_transpose->transposeInterval(*transpositionInterval, *staffDef);
+            m_transpose.transposeInterval(transpositionInterval, *staffDef);
         }
 
         // List of staffdefs or staffgrps we're going to assign name, midi, etc too. Not necessarily the same one we started with, because...
@@ -1432,7 +1432,7 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
     return true;
 #endif
 
-    int octaveTransposition = m_transpose->GetPartTransposition(Transpose::Interval(), *m_doc.m_scoreDef.GetStaffDef(1),
+    int octaveTransposition = m_transpose.GetPartTransposition(Transpose::Interval(), *m_doc.m_scoreDef.GetStaffDef(1),
                                                                 71 - 12, 48 - 12, 77 - 12, 28 - 12, false);
     return false;
 }
@@ -1645,7 +1645,7 @@ bool Toolkit::Set(std::string elementId, std::string attrType, std::string attrV
 
 bool Toolkit::TransposeKey(int newFifths)
 {
-    return m_transpose->transposeFifths(newFifths);
+    return m_transpose.transposeFifths(newFifths);
 }
 
 #ifdef USE_EMSCRIPTEN

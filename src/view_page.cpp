@@ -91,8 +91,6 @@ void View::DrawHeader(DeviceContext *dc)
 {
     assert(dc);
 
-    std::string wtext = "hello";
-
     AnchoredText *text = new AnchoredText();
     text->SetUuid("header");
 

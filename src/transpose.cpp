@@ -42,12 +42,12 @@ void vrv::Transpose::Interval::Interval::flip()
     chromatic = -chromatic;
 }
 
-vrv::Transpose::Interval *vrv::Transpose::Interval::NormalizeTritone()
+vrv::Transpose::Interval vrv::Transpose::Interval::NormalizeTritone()
 {
     if (IntervalClass() == 6 && StepClass() == 4) {
-        return new Interval(diatonic - 1, chromatic);
+        return Interval(diatonic - 1, chromatic);
     }
-    return this;
+    return *this;
 }
 
 int vrv::Transpose::Interval::IntervalClass()
@@ -74,21 +74,22 @@ int vrv::Transpose::Interval::StepClass()
     return pitches;
 }
 
-vrv::Transpose::Interval *vrv::Transpose::Interval::FromPitches(int pitch)
+vrv::Transpose::Interval vrv::Transpose::Interval::FromPitches(int pitch)
 {
     int octaveNum = floor(abs(pitch) / double(12));
     int pitchNoOctave = abs(pitch) % 12;
     int fifths = LEAST_FIFTHS_STEPS[pitchNoOctave] + (octaveNum * 7);
     if (pitch < 0)
         fifths = -fifths;
-    return new Interval(fifths, pitch);
+    return Interval(fifths, pitch);
 }
 
-vrv::Transpose::Transpose(Doc *doc)
+void Transpose::SetDoc(Doc *doc)
 {
     m_doc = doc;
     chromaticHistory = GetFirstKeySigFifths(m_doc);
 }
+
 
 //---------------------------------------------------------
 //   keydiff2Interval
@@ -150,28 +151,25 @@ int vrv::Transpose::GetFirstKeySigFifths(Doc *m_doc)
 {
     int oldFifths = 0;
 
-    KeySig *keySig;
-    if (m_doc->m_scoreDef.HasKeySigInfo()) {
-        keySig = m_doc->m_scoreDef.GetKeySigCopy();
+    if (m_doc->m_scoreDef.HasKeySig())
+    {
+        int keySigLog = m_doc->m_scoreDef.GetKeySig();
+        oldFifths = keySigLog - KEYSIGNATURE_0;
     }
-
-    if (!keySig) {
+    else
+    {
         std::vector<int> staffs = m_doc->m_scoreDef.GetStaffNs();
         std::vector<int>::iterator iter;
         for (iter = staffs.begin(); iter != staffs.end(); iter++) {
             StaffDef *staffDef = m_doc->m_scoreDef.GetStaffDef(*iter);
             assert(staffDef);
 
-            if (staffDef->HasKeySigInfo()) {
-                keySig = staffDef->GetKeySigCopy();
+            if (staffDef->HasKeySig()) {
+                int keySigLog = staffDef->GetKeySig();
+                oldFifths = keySigLog - KEYSIGNATURE_0;
                 break;
             }
         }
-    }
-
-    if (keySig) {
-        int keySigLog = keySig->ConvertToKeySigLog();
-        oldFifths = keySigLog - KEYSIGNATURE_0;
     }
     return oldFifths;
 }

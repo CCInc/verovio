@@ -19,9 +19,9 @@ public:
         bool SetChromatic(int c);
         signed char GetChromatic() { return chromatic; }
 
-        Interval *NormalizeTritone();
+        Interval NormalizeTritone();
 
-        static Interval *FromPitches(int pitch);
+        static Interval FromPitches(int pitch);
 
         bool operator!=(const Interval &a) const { return diatonic != a.diatonic || chromatic != a.chromatic; }
         bool operator==(const Interval &a) const { return diatonic == a.diatonic && chromatic == a.chromatic; }
@@ -43,7 +43,7 @@ public:
     };
 
 public:
-    Transpose(Doc *doc);
+    void SetDoc(Doc *m_doc);
     bool transposeFifths(int newFifths);
     bool transposeInterval(Interval interval, StaffDef staffDef);
     // returns chromatic pitch transformation to fit inside part comf or pro range
