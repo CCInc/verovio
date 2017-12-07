@@ -20,6 +20,9 @@ public:
         signed char GetChromatic() { return chromatic; }
 
         Interval NormalizeTritone();
+        vrv::Transpose::Interval Normalize();
+        int GetFifths();
+        Interval Abs();
 
         static Interval FromPitches(int pitch);
 
@@ -33,6 +36,7 @@ public:
         int StepClass();
 
         static int LEAST_FIFTHS_STEPS[];
+        static int LEAST_FIFTHS[];
     };
 
     enum class TransposeDirection : char {

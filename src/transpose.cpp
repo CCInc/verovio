@@ -11,6 +11,7 @@
 
 namespace vrv {
 int vrv::Transpose::Interval::LEAST_FIFTHS_STEPS[] = {0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6};
+int vrv::Transpose::Interval::LEAST_FIFTHS[] = { 0, -5, 2, -3, 4, -1, 6, 1, -4, 3, -2, 5 };
 
 vrv::Transpose::Interval::Interval()
     : diatonic(0)
@@ -18,9 +19,9 @@ vrv::Transpose::Interval::Interval()
 {
 }
 
-vrv::Transpose::Interval::Interval(int a, int b)
-    : diatonic(a)
-    , chromatic(b)
+vrv::Transpose::Interval::Interval(int diatonic, int chromatic)
+    : diatonic(diatonic)
+    , chromatic(chromatic)
 {
 }
 
@@ -40,6 +41,11 @@ void vrv::Transpose::Interval::Interval::flip()
 {
     diatonic = -diatonic;
     chromatic = -chromatic;
+}
+
+vrv::Transpose::Interval vrv::Transpose::Interval::Normalize()
+{
+    return Transpose::Interval(StepClass(), IntervalClass());
 }
 
 vrv::Transpose::Interval vrv::Transpose::Interval::NormalizeTritone()
@@ -82,6 +88,32 @@ vrv::Transpose::Interval vrv::Transpose::Interval::FromPitches(int pitch)
     if (pitch < 0)
         fifths = -fifths;
     return Interval(fifths, pitch);
+}
+
+vrv::Transpose::Interval vrv::Transpose::Interval::Abs()
+{
+    return Transpose::Interval(abs(GetDiatonic()), abs(GetChromatic()));
+}
+
+int vrv::Transpose::Interval::GetFifths()
+{
+    Transpose::Interval interval = this->Abs().Normalize();
+    int fifths = LEAST_FIFTHS[interval.GetChromatic()];
+    int steps = interval.GetDiatonic() - LEAST_FIFTHS_STEPS[interval.GetChromatic()];
+    while (steps > 3)
+    {
+        steps -= 7;
+    }
+    while (steps < -3)
+    {
+        steps += 7;
+    }
+    fifths -= steps * 12;
+
+    if (GetChromatic() >= 0 && GetDiatonic() >= 0)
+        return fifths;
+    else
+        return -fifths;
 }
 
 void Transpose::SetDoc(Doc *doc)
