@@ -321,6 +321,7 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\src\interval.cpp" />
     <ClCompile Include="..\src\transpose.cpp" />
     <ClCompile Include="D:\Projects\music\Verovio\verovio\tools\main.cpp" />
     <ClCompile Include="D:\Projects\music\Verovio\verovio\src\accid.cpp" />

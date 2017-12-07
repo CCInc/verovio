@@ -370,6 +370,9 @@
     <ClCompile Include="..\src\transpose.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="..\src\interval.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <CustomBuild Include="D:\Projects\music\Verovio\verovio\tools\CMakeLists.txt" />

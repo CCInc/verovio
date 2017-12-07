@@ -10,111 +10,6 @@
 #include <attcomparison.h>
 
 namespace vrv {
-int vrv::Transpose::Interval::LEAST_FIFTHS_STEPS[] = {0, 1, 1, 2, 2, 3, 3, 4, 5, 5, 6, 6};
-int vrv::Transpose::Interval::LEAST_FIFTHS[] = { 0, -5, 2, -3, 4, -1, 6, 1, -4, 3, -2, 5 };
-
-vrv::Transpose::Interval::Interval()
-    : diatonic(0)
-    , chromatic(0)
-{
-}
-
-vrv::Transpose::Interval::Interval(int diatonic, int chromatic)
-    : diatonic(diatonic)
-    , chromatic(chromatic)
-{
-}
-
-bool vrv::Transpose::Interval::SetDiatonic(int d)
-{
-    diatonic = d;
-    return true;
-}
-
-bool vrv::Transpose::Interval::SetChromatic(int c)
-{
-    chromatic = c;
-    return true;
-}
-
-void vrv::Transpose::Interval::Interval::flip()
-{
-    diatonic = -diatonic;
-    chromatic = -chromatic;
-}
-
-vrv::Transpose::Interval vrv::Transpose::Interval::Normalize()
-{
-    return Transpose::Interval(StepClass(), IntervalClass());
-}
-
-vrv::Transpose::Interval vrv::Transpose::Interval::NormalizeTritone()
-{
-    if (IntervalClass() == 6 && StepClass() == 4) {
-        return Interval(diatonic - 1, chromatic);
-    }
-    return *this;
-}
-
-int vrv::Transpose::Interval::IntervalClass()
-{
-    int pitches = chromatic;
-    while (pitches < 0) {
-        pitches += 12;
-    }
-    while (pitches >= 12) {
-        pitches -= 12;
-    }
-    return pitches;
-}
-
-int vrv::Transpose::Interval::StepClass()
-{
-    int pitches = diatonic;
-    while (pitches < 0) {
-        pitches += 7;
-    }
-    while (pitches >= 7) {
-        pitches -= 7;
-    }
-    return pitches;
-}
-
-vrv::Transpose::Interval vrv::Transpose::Interval::FromPitches(int pitch)
-{
-    int octaveNum = floor(abs(pitch) / double(12));
-    int pitchNoOctave = abs(pitch) % 12;
-    int fifths = LEAST_FIFTHS_STEPS[pitchNoOctave] + (octaveNum * 7);
-    if (pitch < 0)
-        fifths = -fifths;
-    return Interval(fifths, pitch);
-}
-
-vrv::Transpose::Interval vrv::Transpose::Interval::Abs()
-{
-    return Transpose::Interval(abs(GetDiatonic()), abs(GetChromatic()));
-}
-
-int vrv::Transpose::Interval::GetFifths()
-{
-    Transpose::Interval interval = this->Abs().Normalize();
-    int fifths = LEAST_FIFTHS[interval.GetChromatic()];
-    int steps = interval.GetDiatonic() - LEAST_FIFTHS_STEPS[interval.GetChromatic()];
-    while (steps > 3)
-    {
-        steps -= 7;
-    }
-    while (steps < -3)
-    {
-        steps += 7;
-    }
-    fifths -= steps * 12;
-
-    if (GetChromatic() >= 0 && GetDiatonic() >= 0)
-        return fifths;
-    else
-        return -fifths;
-}
 
 void Transpose::SetDoc(Doc *doc)
 {
@@ -122,12 +17,11 @@ void Transpose::SetDoc(Doc *doc)
     chromaticHistory = GetFirstKeySigFifths(m_doc);
 }
 
-
 //---------------------------------------------------------
 //   keydiff2Interval
 //    keysig -   -7(Cb) - +7(C#)
 //---------------------------------------------------------
-vrv::Transpose::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int newFifths, TransposeDirection dir)
+vrv::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int newFifths, TransposeDirection dir)
 {
     static int stepTable[15] = {
         // C  G  D  A  E  B Fis
@@ -176,7 +70,7 @@ vrv::Transpose::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int new
 
     chromaticHistory += chromatic;
 
-    return vrv::Transpose::Interval(diatonic, chromatic);
+    return vrv::Interval(diatonic, chromatic);
 }
 
 int vrv::Transpose::GetFirstKeySigFifths(Doc *m_doc)
@@ -253,7 +147,7 @@ bool vrv::Transpose::transposeFifths(int newFifths)
     return true;
 }
 
-bool vrv::Transpose::transposeInterval(vrv::Transpose::Interval interval, StaffDef staffDef)
+bool vrv::Transpose::transposeInterval(vrv::Interval interval, StaffDef staffDef)
 {
     Clef *clef = staffDef.GetCurrentClef();
     if (!clef || clef->GetShape() == CLEFSHAPE_perc) return false;
@@ -280,7 +174,7 @@ bool vrv::Transpose::transposeInterval(vrv::Transpose::Interval interval, StaffD
     return true;
 }
 
-int vrv::Transpose::GetPartTransposition(vrv::Transpose::Interval transposeInterval, StaffDef staffDef, int comfHigh,
+int vrv::Transpose::GetPartTransposition(vrv::Interval transposeInterval, StaffDef staffDef, int comfHigh,
                                          int comfLow, int proHigh, int proLow, bool multiStaff)
 {
     Clef *clef = staffDef.GetCurrentClef();
@@ -571,7 +465,7 @@ int Transpose::tpc2pitch(int tpc)
     return pitches[tpc + 1];
 }
 
-void vrv::Transpose::transposeTpc(int tpc, vrv::Transpose::Interval interval, bool useDoubleSharpsFlats, int &step,
+void vrv::Transpose::transposeTpc(int tpc, vrv::Interval interval, bool useDoubleSharpsFlats, int &step,
                                   int &alter)
 {
     int minAlter;
