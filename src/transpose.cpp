@@ -75,12 +75,11 @@ vrv::Interval vrv::Transpose::keydiff2Interval(int oldFifths, int newFifths, Tra
 
 int vrv::Transpose::GetFirstKeySigFifths(Doc *m_doc)
 {
-    int oldFifths = 0;
+    int keySigLog = KEYSIGNATURE_0;
 
     if (m_doc->m_scoreDef.HasKeySig())
     {
-        int keySigLog = m_doc->m_scoreDef.GetKeySig();
-        oldFifths = keySigLog - KEYSIGNATURE_0;
+        keySigLog = m_doc->m_scoreDef.GetKeySig();
     }
     else
     {
@@ -91,13 +90,102 @@ int vrv::Transpose::GetFirstKeySigFifths(Doc *m_doc)
             assert(staffDef);
 
             if (staffDef->HasKeySig()) {
-                int keySigLog = staffDef->GetKeySig();
-                oldFifths = keySigLog - KEYSIGNATURE_0;
+                keySigLog = staffDef->GetKeySig();
+
+                Interval transpositionInterval = staffDef->GetTransInterval();
+                int fifths = keySigLog - KEYSIGNATURE_0;
+                // add the transposition to inverse the transposition
+                fifths += transpositionInterval.GetFifths();
+
+                // We have to undo the enharmonic distance thing we did earlier
+                // NOTE that this will never happen in practice, since we always set the ScoreDef keySig before changing the staffDef one
+                if (staffDef->HasEnharmonicInt())
+                {
+                    int enharmonicDistance = staffDef->GetEnharmonicInt();
+                    while (enharmonicDistance > 0)
+                    {
+                        fifths += 12;
+                        enharmonicDistance--;
+                    }
+                    while (enharmonicDistance < 0)
+                    {
+                        fifths -= 12;
+                        enharmonicDistance++;
+                    }
+                }
+
+                keySigLog = fifths + KEYSIGNATURE_0;
+                keySigLog = Transpose::GetAbsoluteKeySig(keySigLog);
                 break;
             }
         }
     }
-    return oldFifths;
+    // Need to subtract KEYSIGNATURE_0 to convert the enum int to actual key sig fifths
+    return keySigLog - KEYSIGNATURE_0;
+}
+
+data_KEYSIGNATURE vrv::Transpose::GetAbsoluteKeySig(int keySigLog)
+{
+    //keySigLog = (keySigLog + 14) % 15 + 1;
+    return static_cast<data_KEYSIGNATURE>(keySigLog);
+}
+
+void vrv::Transpose::ChangeStaffDefKeySig(StaffDef *staffDef, int origFifths)
+{
+    int fifths = origFifths;
+    int oldKeySigLog = origFifths + KEYSIGNATURE_0;
+    Interval transpositionInterval = staffDef->GetTransInterval();
+
+    // First, set the scoreDef key sig to what the keysig actually should be
+    m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(oldKeySigLog));
+
+    int enharmonicDistance = 0;
+    fifths = fifths - transpositionInterval.GetFifths();
+    while (fifths > 7)
+    {
+        fifths -= 12;
+        enharmonicDistance++;
+    }
+    while(fifths < -7)
+    {
+        fifths += 12;
+        enharmonicDistance--;
+    }
+    if ((fifths <= 5 || fifths >= 5) && origFifths != fifths)
+    {
+        /// TODO: Implement this part, which deals with changing key sigs
+        // LINES 675-677 in MEasure.as
+    }
+    staffDef->SetEnharmonicInt(enharmonicDistance);
+
+    int keySigLog = fifths + KEYSIGNATURE_0;
+    data_KEYSIGNATURE partKeySig = Transpose::GetAbsoluteKeySig(keySigLog);
+    // we already added the transposition interval
+    //data_KEYSIGNATURE partKeySig = Transpose::GetAbsoluteKeySig(keySigLog + transpositionInterval.GetFifths());
+    staffDef->SetKeySig(partKeySig);
+}
+
+void vrv::Transpose::ChangeKeySignature(int newFifths)
+{
+    ArrayOfObjects staffs = m_doc->FindAllChildByType(STAFF);
+    ArrayOfObjects::iterator iter2;
+    for (iter2 = staffs.begin(); iter2 != staffs.end(); iter2++) {
+        Staff *staff = dynamic_cast<Staff *>(*iter2);
+        assert(staff);
+
+        StaffDef *staffDef = staff->m_drawingStaffDef;
+        assert(staffDef);
+
+        // skip perc. clefs
+        Clef *clef = staffDef->GetCurrentClef();
+        if (!clef || clef->GetShape() == CLEFSHAPE_perc) continue;
+
+        StaffDef *updatedStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
+        ChangeStaffDefKeySig(updatedStaffDef, newFifths);
+    }
+
+    int keySigLog = newFifths + KEYSIGNATURE_0;
+    m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
 }
 
 bool vrv::Transpose::transposeFifths(int newFifths)
@@ -123,24 +211,9 @@ bool vrv::Transpose::transposeFifths(int newFifths)
 
         ArrayOfObjects notes = staff->FindAllChildByType(NOTE);
         transposeNotes(interval, notes);
-
-        if (staffDef->HasKeySig()) {
-            data_KEYSIGNATURE keySig = staffDef->GetKeySig();
-
-            int keySigLog = newFifths + KEYSIGNATURE_0;
-
-            StaffDef *updatedStaffDef = m_doc->m_scoreDef.GetStaffDef(staffDef->GetN());
-            updatedStaffDef->SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
-        }
     }
 
-    if (m_doc->m_scoreDef.HasKeySig()) {
-        data_KEYSIGNATURE keySig = m_doc->m_scoreDef.GetKeySig();
-
-        int keySigLog = newFifths + KEYSIGNATURE_0;
-
-        m_doc->m_scoreDef.SetKeySig(static_cast<data_KEYSIGNATURE>(keySigLog));
-    }
+    ChangeKeySignature(newFifths);
 
     m_doc->UnCastOffDoc();
     m_doc->CastOffDoc();

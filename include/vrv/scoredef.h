@@ -13,6 +13,7 @@
 #include "drawinginterface.h"
 #include "object.h"
 #include "scoredefinterface.h"
+#include "interval.h"
 
 namespace vrv {
 
@@ -312,6 +313,7 @@ public:
      */
     virtual int SetStaffDefRedrawFlags(FunctorParams *functorParams);
 
+    Interval GetTransInterval();
 private:
     //
 public:

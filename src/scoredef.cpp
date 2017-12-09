@@ -596,4 +596,18 @@ int StaffDef::SetStaffDefRedrawFlags(FunctorParams *functorParams)
     return FUNCTOR_CONTINUE;
 }
 
+Interval StaffDef::GetTransInterval()
+{
+    Interval transpositionInterval = Interval();
+    if (this->HasTransDiat() && this->HasTransSemi())
+    {
+        transpositionInterval = Interval(this->GetTransDiat(), this->GetTransSemi());
+    }
+    else if (this->HasTransSemi())
+    {
+        transpositionInterval = Interval::FromPitches(this->GetTransSemi());
+    }
+    return transpositionInterval;
+}
+
 } // namespace vrv

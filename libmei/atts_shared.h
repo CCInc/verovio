@@ -5787,6 +5787,10 @@ public:
     void SetTransOct(double transSemi_) { m_transOct = transSemi_; }
     double GetTransOct() const { return m_transOct; }
     bool HasTransOct() const;
+    //
+    void SetEnharmonicInt(double transSemi_) { m_enharmonicInt = transSemi_; }
+    double GetEnharmonicInt() const { return m_enharmonicInt; }
+    bool HasEnharmonicInt() const;
     ///@}
 
 private:
@@ -5801,6 +5805,7 @@ private:
      **/
     double m_transSemi;
     double m_transOct;
+    double m_enharmonicInt;
 
     /* include <atttrans.semi> */
 };

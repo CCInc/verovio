@@ -7629,6 +7629,7 @@ void AttTransposition::ResetTransposition()
     m_transDiat = 0.0;
     m_transSemi = 0.0;
     m_transOct = 0.0;
+    m_enharmonicInt = 0.0;
 }
 
 bool AttTransposition::ReadTransposition(pugi::xml_node element)
@@ -7649,6 +7650,11 @@ bool AttTransposition::ReadTransposition(pugi::xml_node element)
         element.remove_attribute("trans.oct");
         hasAttribute = true;
     }
+    if (element.attribute("trans.enhInt")) {
+        this->SetEnharmonicInt(StrToDbl(element.attribute("trans.enhInt").value()));
+        element.remove_attribute("trans.enhInt");
+        hasAttribute = true;
+    }
     return hasAttribute;
 }
 
@@ -7667,6 +7673,10 @@ bool AttTransposition::WriteTransposition(pugi::xml_node element)
         element.append_attribute("trans.oct") = DblToStr(this->GetTransOct()).c_str();
         wroteAttribute = true;
     }
+    if (this->HasEnharmonicInt()) {
+        element.append_attribute("trans.enhInt") = DblToStr(this->GetEnharmonicInt()).c_str();
+        wroteAttribute = true;
+    }
     return wroteAttribute;
 }
 
@@ -7683,6 +7693,11 @@ bool AttTransposition::HasTransSemi() const
 bool AttTransposition::HasTransOct() const
 {
     return (m_transOct != 0.0);
+}
+
+bool AttTransposition::HasEnharmonicInt() const
+{
+    return (m_enharmonicInt != 0.0);
 }
 
 /* include <atttrans.semi> */

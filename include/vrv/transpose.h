@@ -22,6 +22,9 @@ public:
     int GetPartTransposition(Interval exitingInterval, StaffDef staffDef,
                              int comfHigh, int comfLow, int proHigh, int proLow, bool multiStaff);
     static int GetFirstKeySigFifths(Doc *m_doc);
+    static data_KEYSIGNATURE GetAbsoluteKeySig(int keySigLog);
+    void ChangeStaffDefKeySig(StaffDef * staffDef, int oldFifths);
+    void ChangeKeySignature(int newFifths);
 private:
     Interval keydiff2Interval(int oldFifths, int newFifths,
                                               TransposeDirection dir = TransposeDirection::CLOSEST);

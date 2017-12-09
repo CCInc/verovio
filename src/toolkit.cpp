@@ -1218,16 +1218,12 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
         for (iter = staffDefs.begin(); iter != staffDefs.end(); iter++) {
             StaffDef *staffDef = *iter;
 
+            // We have to get the key signature before we set the new SetTransDiat or call ResetTransposition,
+            // because GetFirstKeySigFifths relies on GetTransSemi to get the correct keysig
+            int fifths = Transpose::GetFirstKeySigFifths(&m_doc);
+
             // First, we need to negate any existing transposition to bring the music back to concert pitch
-            Transpose::Interval transpositionInterval = Transpose::Interval();
-            if (staffDef->HasTransDiat() && staffDef->HasTransSemi())
-            {
-                transpositionInterval = Transpose::Interval(staffDef->GetTransDiat(), staffDef->GetTransSemi());
-            }
-            else if (staffDef->HasTransSemi())
-            {
-                transpositionInterval = Transpose::Interval::FromPitches(staffDef->GetTransSemi());
-            }
+            Interval transpositionInterval = staffDef->GetTransInterval();
             // and then reset the part transposition
             staffDef->ResetTransposition();
 
@@ -1238,9 +1234,13 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
                 transp = partDefaults.get<jsonxx::Number>("transp");
                 // from nf
                 partTranspose = Interval::FromPitches(-transp).NormalizeTritone();
+
                 // set the part transposition so that the MIDI file will negate it and play it in concert pitch
                 staffDef->SetTransDiat(-partTranspose.GetDiatonic());
                 staffDef->SetTransSemi(-partTranspose.GetChromatic());
+
+                // Change the key sig to account for the part transposition
+                m_transpose.ChangeStaffDefKeySig(staffDef, fifths);
             }
 
             // UPDATE STAFFDEF
@@ -1432,8 +1432,12 @@ bool Toolkit::ChangeInstrument(std::string elementId, std::string json_newInstru
     return true;
 #endif
 
-    int octaveTransposition = m_transpose.GetPartTransposition(Interval(), *m_doc.m_scoreDef.GetStaffDef(1),
-                                                                71 - 12, 48 - 12, 77 - 12, 28 - 12, false);
+    m_transpose.GetFirstKeySigFifths(&m_doc);
+    m_transpose.ChangeKeySignature(7);
+    m_doc.UnCastOffDoc();
+    m_doc.CastOffDoc();
+  /*  int octaveTransposition = m_transpose.GetPartTransposition(Interval(), *m_doc.m_scoreDef.GetStaffDef(1),
+                                                                71 - 12, 48 - 12, 77 - 12, 28 - 12, false);*/
     return false;
 }
 
