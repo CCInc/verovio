@@ -535,7 +535,7 @@ void Doc::CastOffDoc()
     CastOffPagesParams castOffPagesParams(contentPage, this, currentPage);
     castOffPagesParams.m_pageHeight
         = this->m_drawingPageHeight - this->m_drawingPageTopMar; // obviously we need a bottom margin
-	//if (GetPageIdx() == 0) alignSystemsParams.m_shift -= doc->m_drawingPageHeaderHeight;
+	if (currentPage->GetPageIdx() == 0) castOffPagesParams.m_shift = m_drawingPageHeaderHeight;
     Functor castOffPages(&Object::CastOffPages);
     contentPage->Process(&castOffPages, &castOffPagesParams);
     delete contentPage;

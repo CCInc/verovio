@@ -415,6 +415,11 @@ int main(int argc, char **argv)
         }
     }
 
+    toolkit.SetBorder(240);
+    toolkit.SetPageWidth(2176);
+    toolkit.SetPageHeight(2816);
+    toolkit.SetIgnoreLayout(true);
+    toolkit.SetAdjustPageHeight(false);
 	/// INSERT DEBUG CODE HERE1
 	toolkit.SetHeader("titel", "sub", "comp", "arr");
 	toolkit.SetScoreBasedMei(true);
