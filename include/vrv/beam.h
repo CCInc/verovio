@@ -99,6 +99,8 @@ public:
      */
     const ArrayOfBeamElementCoords *GetElementCoords() const { return &m_beamElementCoords; }
 
+    Staff *GetBeamCrossStaff(Layer *&layer);
+
     //----------//
     // Functors //
     //----------//

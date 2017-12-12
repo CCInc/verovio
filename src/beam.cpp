@@ -445,6 +445,50 @@ bool Beam::IsLastInBeam(LayerElement *element)
     return false;
 }
 
+Staff *Beam::GetBeamCrossStaff(Layer *&layer)
+{
+    if (m_crossStaff) {
+        if (!m_crossLayer)
+            return NULL;
+
+        assert(m_crossLayer);
+        layer = m_crossLayer;
+        return m_crossStaff;
+    }
+
+    Staff *crossStaff = NULL;
+    ListOfObjects *children = this->GetList(this);
+
+    ListOfObjects::iterator iter;
+    for (iter = children->begin(); iter != children->end(); ++iter) {
+        if ((*iter)->GetDurationInterface() && (*iter)->IsLayerElement())
+        {
+            LayerElement *child = static_cast<LayerElement*>(*iter);
+            if (child->m_crossStaff)
+            {
+                if (!crossStaff || crossStaff == child->m_crossStaff)
+                {
+                    crossStaff = child->m_crossStaff;
+
+                    if (!child->m_crossLayer)
+                        return NULL;
+
+                    assert(child->m_crossLayer);
+                    layer = child->m_crossLayer;
+
+                    continue;
+                }
+                else
+                    return NULL;
+            }
+            else
+                return NULL;
+        }
+    }
+    
+    return crossStaff;
+}
+
 void Beam::InitCoords(ListOfObjects *childList)
 {
     ClearCoords();

@@ -40,6 +40,9 @@ void View::DrawBeam(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     Beam *beam = dynamic_cast<Beam *>(element);
     assert(beam);
 
+    Staff *crossStaff = beam->GetBeamCrossStaff(layer);
+    if (crossStaff) staff = crossStaff;
+
     // duration variables
     int testDur;
 
