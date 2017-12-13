@@ -2294,6 +2294,7 @@ bool MeiInput::ReadMeiStaffGrp(Object *parent, pugi::xml_node staffGrp)
     vrvStaffGrp->ReadStaffGrpVis(staffGrp);
     vrvStaffGrp->ReadStaffgroupingsym(staffGrp);
     vrvStaffGrp->ReadTyped(staffGrp);
+    vrvStaffGrp->ReadMidiinstrument(staffGrp);
 
     parent->AddChild(vrvStaffGrp);
     return ReadMeiStaffGrpChildren(vrvStaffGrp, staffGrp);
@@ -2339,6 +2340,7 @@ bool MeiInput::ReadMeiStaffDef(Object *parent, pugi::xml_node staffDef)
     vrvStaffDef->ReadScalable(staffDef);
     vrvStaffDef->ReadStaffDefVis(staffDef);
     vrvStaffDef->ReadTransposition(staffDef);
+    vrvStaffDef->ReadMidiinstrument(staffDef);
 
     if (!vrvStaffDef->HasN()) {
         LogWarning("No @n on <staffDef> might yield unpredictable results");
