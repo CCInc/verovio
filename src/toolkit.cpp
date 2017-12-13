@@ -1014,11 +1014,11 @@ std::string Toolkit::GetKeySignature()
 std::string Toolkit::GetInstruments()
 {
 #if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
-	ScoreDef scoreDef = m_doc.m_scoreDef;
-	StaffGrp *topStaffGrp = dynamic_cast<StaffGrp *>(scoreDef.FindChildByType(STAFFGRP));
+    ScoreDef scoreDef = m_doc.m_scoreDef;
+    StaffGrp *topStaffGrp = dynamic_cast<StaffGrp *>(scoreDef.FindChildByType(STAFFGRP));
 
-        jsonxx::Object output = GetStaffGrp(topStaffGrp);
-	return output.json();
+    jsonxx::Object output = GetStaffGrp(topStaffGrp);
+    return output.json();
 #else
     // The non-js version of the app should not use this function.
     return "";
@@ -1028,50 +1028,73 @@ std::string Toolkit::GetInstruments()
 #if defined(USE_EMSCRIPTEN) || defined(PYTHON_BINDING)
 jsonxx::Object Toolkit::GetStaffGrp(StaffGrp *staffGrp)
 {
-	jsonxx::Object output;
+    jsonxx::Object output;
 
-        output << "type" << "staffGrp";
-	if (staffGrp->HasMidiInstrname())
-	{
-		output << "midi.instrname" << staffGrp->GetMidiInstrname();
-	}
-	if (staffGrp->HasLabel())
-	{
-		output << "label" << staffGrp->GetLabel();
-	}
-	output << "id" << staffGrp->GetUuid();
+    output << "type" << "staffGrp";
+    if (staffGrp->HasMidiInstrname())
+    {
+        output << "midi.instrname" << staffGrp->GetMidiInstrname();
+    }
+    if (staffGrp->HasMidiInstrnum())
+    {
+        output << "midi.instrnum" << staffGrp->GetMidiInstrnum();
+    }
+    if (staffGrp->HasSymbol())
+    {
+        AttStaffgroupingsym *att = dynamic_cast<AttStaffgroupingsym *>(staffGrp);
+        output << "symbol" << att->StaffgroupingsymSymbolToStr(staffGrp->GetSymbol());
+    }
+    if (staffGrp->HasIsPart())
+    {
+        AttLabelsAddl *att = dynamic_cast<AttLabelsAddl *>(staffGrp);
+        output << "isPart" << att->BooleanToStr(staffGrp->GetIsPart());
+    }
+    if (staffGrp->HasLabel())
+    {
+        output << "label" << staffGrp->GetLabel();
+    }
+    output << "id" << staffGrp->GetUuid();
 
-        jsonxx::Array children;
-	int i;
-        for (i = 0; i < staffGrp->GetChildCount(); i++) {
-            Object *child = staffGrp->GetChild(i);
-            if (child->Is(STAFFGRP)) {
-                children << GetStaffGrp(dynamic_cast<StaffGrp *>(child));
-            }
-            else if (child->Is(STAFFDEF)) {
-                children << GetStaffDef(dynamic_cast<StaffDef *>(child));
-            }
+    jsonxx::Array children;
+    int i;
+    for (i = 0; i < staffGrp->GetChildCount(); i++) {
+        Object *child = staffGrp->GetChild(i);
+        if (child->Is(STAFFGRP)) {
+            children << GetStaffGrp(dynamic_cast<StaffGrp *>(child));
         }
-        output << "children" << children;
-	return output;
+        else if (child->Is(STAFFDEF)) {
+            children << GetStaffDef(dynamic_cast<StaffDef *>(child));
+        }
+    }
+    output << "children" << children;
+    return output;
 }
 
 jsonxx::Object Toolkit::GetStaffDef(StaffDef *staffDef)
 {
-	jsonxx::Object output;
+    jsonxx::Object output;
 
-        output << "type" << "staffDef";
-	if (staffDef->HasMidiInstrname())
-	{
-		output << "midi.instrname" << staffDef->GetMidiInstrname();
-	}
-	if (staffDef->HasLabel())
-	{
-		output << "label" << staffDef->GetLabel();
-	}
-	output << "id" << staffDef->GetUuid();
+    output << "type" << "staffDef";
+    if (staffDef->HasMidiInstrname())
+    {
+        output << "midi.instrname" << staffDef->GetMidiInstrname();
+    }
+    if (staffDef->HasMidiInstrnum())
+    {
+        output << "midi.instrnum" << staffDef->GetMidiInstrnum();
+    }
+    if (staffDef->HasIsPart())
+    {
+        AttLabelsAddl *att = dynamic_cast<AttLabelsAddl *>(staffDef);
+        output << "isPart" << att->BooleanToStr(staffDef->GetIsPart());
+    }
+    if (staffDef->HasLabel())
+    {
+        output << "label" << staffDef->GetLabel();
+    }
+    output << "id" << staffDef->GetUuid();
 
-	return output;
+    return output;
 }
 #endif
 
