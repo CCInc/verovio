@@ -2945,6 +2945,7 @@ AttLabelsAddl::~AttLabelsAddl()
 void AttLabelsAddl::ResetLabelsAddl()
 {
     m_labelAbbr = "";
+    m_isPart = BOOLEAN_NONE;
 }
 
 bool AttLabelsAddl::ReadLabelsAddl(pugi::xml_node element)
@@ -2953,6 +2954,11 @@ bool AttLabelsAddl::ReadLabelsAddl(pugi::xml_node element)
     if (element.attribute("label.abbr")) {
         this->SetLabelAbbr(StrToStr(element.attribute("label.abbr").value()));
         element.remove_attribute("label.abbr");
+        hasAttribute = true;
+    }
+    if (element.attribute("isPart")) {
+        this->SetIsPart(StrToBoolean(element.attribute("isPart").value()));
+        element.remove_attribute("isPart");
         hasAttribute = true;
     }
     return hasAttribute;
@@ -2971,6 +2977,11 @@ bool AttLabelsAddl::WriteLabelsAddl(pugi::xml_node element)
 bool AttLabelsAddl::HasLabelAbbr() const
 {
     return (m_labelAbbr != "");
+}
+
+bool AttLabelsAddl::HasIsPart() const
+{
+    return (m_isPart != BOOLEAN_NONE);
 }
 
 /* include <attlabel.abbr> */

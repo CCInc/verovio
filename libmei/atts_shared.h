@@ -2316,12 +2316,16 @@ public:
     bool HasLabelAbbr() const;
     ///@}
 
+    void SetIsPart(data_BOOLEAN labelAbbr_) { m_isPart = labelAbbr_; }
+    data_BOOLEAN GetIsPart() const { return m_isPart; }
+    bool HasIsPart() const;
 private:
     /**
      * Provides a label for a group of staves on pages after the first page.
      * Usually, this label takes an abbreviated form.
      **/
     std::string m_labelAbbr;
+    data_BOOLEAN m_isPart;
 
     /* include <attlabel.abbr> */
 };
