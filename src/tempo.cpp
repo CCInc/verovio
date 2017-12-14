@@ -25,7 +25,7 @@ namespace vrv {
 //----------------------------------------------------------------------------
 
 Tempo::Tempo()
-    : ControlElement("tempo-"), TextDirInterface(), TimePointInterface(), AttLang(), AttMiditempo(), AttMmtempo()
+    : ControlElement("tempo-"), TextDirInterface(), TextListInterface(), TimePointInterface(), AttLang(), AttMiditempo(), AttMmtempo()
 {
     RegisterInterface(TextDirInterface::GetAttClasses(), TextDirInterface::IsInterface());
     RegisterInterface(TimePointInterface::GetAttClasses(), TimePointInterface::IsInterface());

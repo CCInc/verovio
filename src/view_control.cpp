@@ -2025,20 +2025,15 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
         dc->SetFont(&tempoTxt);
         dc->StartText(ToDeviceContextX(x), ToDeviceContextY(y), alignment);
 
-        Object *current;
-        for (current = tempo->GetFirst(); current; current = tempo->GetNext()) {
-            if (current->IsTextElement()) {
-                if (current->Is(TEXT)) {
-                    Text *text = dynamic_cast<Text *>(current);
-                    assert(text);
-                    DrawText(dc, text, x, y, setX, setY);
+        DrawTextChildren(dc, tempo, x, y, setX, setY);
 
-                    TextExtend tempoText;
-                    dc->GetTextExtent(text->GetText(), &tempoText);
-                    x += tempoText.m_width;
-                    hasText = true;
-                }
-            }
+        std::string tempoText = UTF16to8(tempo->GetText(tempo));
+        TextExtend tempoTextExtend;
+        dc->GetTextExtent(tempoText, &tempoTextExtend);
+        if (!tempoText.empty() && tempoText.find_first_not_of(" \t\n\v\f\r") != std::string::npos)
+        {
+            x += tempoTextExtend.m_width;
+            hasText = true;
         }
 
         bool hasParenthesis = hasText && hasMM;

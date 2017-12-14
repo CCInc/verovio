@@ -26,6 +26,7 @@ class TextElement;
  */
 class Tempo : public ControlElement,
               public TextDirInterface,
+              public TextListInterface,
               public TimePointInterface,
               public AttLang,
               public AttMiditempo,
