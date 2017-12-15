@@ -352,6 +352,10 @@ int Note::CalcStem(FunctorParams *functorParams)
 {
     CalcStemParams *params = dynamic_cast<CalcStemParams *>(functorParams);
     assert(params);
+    
+    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+        return FUNCTOR_SIBLINGS;
+    }
 
     // Stems have been calculated previously in Beam or FTrem - siblings becasue flags do not need to
     // be processed either
@@ -488,6 +492,9 @@ int Note::CalcDots(FunctorParams *functorParams)
     if (this->IsMensural()) {
         return FUNCTOR_SIBLINGS;
     }
+    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+        return FUNCTOR_SIBLINGS;
+    }
 
     Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
     assert(staff);
@@ -555,6 +562,10 @@ int Note::CalcLedgerLines(FunctorParams *functorParams)
 
     Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
     assert(staff);
+
+    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+        return FUNCTOR_SIBLINGS;
+    }
 
     if (this->m_crossStaff) staff = this->m_crossStaff;
 
