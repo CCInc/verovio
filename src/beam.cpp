@@ -401,6 +401,22 @@ void Beam::FilterList(ListOfObjects *childList)
                     iter = childList->erase(iter);
                     continue;
                 }
+
+                // if it's not visible, don't include it because it'll mess up the beam
+                if (note->HasVisible() && note->GetVisible() == BOOLEAN_false) {
+                    iter = childList->erase(iter);
+                    continue;
+                }
+            }
+            else if (element->Is(CHORD)) {
+                Chord *chord = dynamic_cast<Chord *>(element);
+                assert(chord);
+
+                // if it's not visible, don't include it because it'll mess up the beam
+                if (!chord->IsVisible()) {
+                    iter = childList->erase(iter);
+                    continue;
+                }
             }
             iter++;
         }
