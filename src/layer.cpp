@@ -163,6 +163,8 @@ LayerElement *Layer::GetAtPos(int x)
 Clef *Layer::GetClef(LayerElement *test)
 {
     Object *testObject = test;
+    // record the original element's x position so that we don't pass it in our search for a clef
+    int origXPos = testObject->GetDrawingX();
 
     if (!test) {
         return GetCurrentClef();
@@ -172,6 +174,54 @@ Clef *Layer::GetClef(LayerElement *test)
     ResetList(this);
     if (!test->Is(CLEF)) {
         testObject = GetListFirstBackward(testObject, CLEF);
+
+        // Get all the layers within the staff in case one of them has a clef that's not in our current layer
+        Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
+        assert(staff);
+        ArrayOfObjects layersInStaff;
+        AttComparison matchType(LAYER);
+        staff->FindAllChildByAttComparison(&layersInStaff, &matchType);
+
+        // Iterate through each layer and check for clefs, and if the clef in that layer is closer than the clef we found in this layer, set it as the clef we're using
+        ArrayOfObjects::iterator iter;
+        for (iter = layersInStaff.begin(); iter != layersInStaff.end(); iter++) {
+            Layer *layer = dynamic_cast<Layer *>(*iter);
+            assert(layer);
+
+            // Use this element as a starting point to initiate the search from
+            Object *layerClosestElement = layer->GetAtPos(origXPos);
+            if (layerClosestElement)
+            {
+                Clef *layerClosestClef = NULL;
+                // If that element happens to be a clef, run with it
+                if (layerClosestElement->Is(CLEF))
+                {
+                    layerClosestClef = dynamic_cast<Clef *>(layerClosestElement);
+                }
+                // if that closest element isn't a clef, use a reverse iterator to find the nearest clef to that element
+                else
+                {
+                    Object *layerTestObject = layer->GetListFirstBackward(layerClosestElement, CLEF);
+                    if (layerTestObject && layerTestObject->Is(CLEF))
+                    {
+                        layerClosestClef = dynamic_cast<Clef *>(layerTestObject);
+                    }
+                }
+                // If we found a clef in this layer
+                if (layerClosestClef && layerClosestClef->Is(CLEF))
+                {
+                    // We'll either set this layer's clef as our clef if
+                    // 1) there is no clef in our layer
+                    // 2) the clef in this layer is closer to the original element than the clef in our layer
+                    // AND the clef is still actually before the original element's position
+                    if (!(testObject && testObject->Is(CLEF)) || (layerClosestClef->GetDrawingX() > testObject->GetDrawingX() && layerClosestClef->GetDrawingX() <= origXPos))
+                    {
+                        testObject = layerClosestClef;
+                    }
+                }
+            }
+        }
+
     }
 
     if (testObject && testObject->Is(CLEF)) {
