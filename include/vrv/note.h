@@ -161,6 +161,8 @@ public:
      */
     wchar_t GetMensuralSmuflNoteHead();
 
+    bool IsVisible();
+
     //----------//
     // Functors //
     //----------//

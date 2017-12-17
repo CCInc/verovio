@@ -344,6 +344,23 @@ wchar_t Note::GetMensuralSmuflNoteHead()
     return code;
 }
 
+bool Note::IsVisible()
+{
+    if (this->HasVisible())
+    {
+        return this->GetVisible() == BOOLEAN_true;
+    }
+    // if the chord doens't have it, see if all the children are invisible
+    else if (GetParent()->Is(CHORD))
+    {
+        Chord *chord = dynamic_cast<Chord *>(GetParent());
+        assert(chord);
+        return chord->IsVisible();
+    }
+    return true;
+}
+
+
 //----------------------------------------------------------------------------
 // Functors methods
 //----------------------------------------------------------------------------
@@ -353,7 +370,7 @@ int Note::CalcStem(FunctorParams *functorParams)
     CalcStemParams *params = dynamic_cast<CalcStemParams *>(functorParams);
     assert(params);
     
-    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+    if (!this->IsVisible()) {
         return FUNCTOR_SIBLINGS;
     }
 
@@ -492,7 +509,7 @@ int Note::CalcDots(FunctorParams *functorParams)
     if (this->IsMensural()) {
         return FUNCTOR_SIBLINGS;
     }
-    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+    if (!this->IsVisible()) {
         return FUNCTOR_SIBLINGS;
     }
 
@@ -563,7 +580,7 @@ int Note::CalcLedgerLines(FunctorParams *functorParams)
     Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
     assert(staff);
 
-    if (this->HasVisible() && this->GetVisible() == BOOLEAN_false) {
+    if (!this->IsVisible()) {
         return FUNCTOR_SIBLINGS;
     }
 
