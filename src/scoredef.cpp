@@ -417,6 +417,7 @@ void StaffGrp::Reset()
     ResetStaffgroupingsym();
     ResetStaffGrpVis();
     ResetTyped();
+    ResetMidiinstrument();
 }
 
 void StaffGrp::AddChild(Object *child)
@@ -499,6 +500,7 @@ void StaffDef::Reset()
     ResetScalable();
     ResetStaffDefVis();
     ResetTransposition();
+    ResetMidiinstrument();
 }
 
 //----------------------------------------------------------------------------
