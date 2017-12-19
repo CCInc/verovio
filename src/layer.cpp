@@ -163,8 +163,6 @@ LayerElement *Layer::GetAtPos(int x)
 Clef *Layer::GetClef(LayerElement *test)
 {
     Object *testObject = test;
-    // record the original element's x position so that we don't pass it in our search for a clef
-    int origXPos = testObject->GetDrawingX();
 
     if (!test) {
         return GetCurrentClef();
@@ -173,9 +171,13 @@ Clef *Layer::GetClef(LayerElement *test)
     // make sure list is set
     ResetList(this);
     if (!test->Is(CLEF)) {
+        // record the original element's x position so that we don't pass it in our search for a clef
+        int origXPos = testObject->GetDrawingX();
+
         testObject = GetListFirstBackward(testObject, CLEF);
 
         // Get all the layers within the staff in case one of them has a clef that's not in our current layer
+        // Until there's a better way to encode duplicate clefs: see issue 400 https://github.com/rism-ch/verovio/issues/400
         Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
         assert(staff);
         ArrayOfObjects layersInStaff;
