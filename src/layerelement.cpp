@@ -670,7 +670,7 @@ int LayerElement::SetAlignmentPitchPos(FunctorParams *functorParams)
     assert(layerY);
 
     if (m_crossStaff && m_crossLayer) {
-        layerElementY = m_crossLayer->GetAtPos(this->GetDrawingX());
+        //layerElementY = m_crossLayer->GetAtPos(this->GetDrawingX());
         staffY = m_crossStaff;
         layerY = m_crossLayer;
     }
@@ -1043,8 +1043,8 @@ int LayerElement::PrepareCrossStaff(FunctorParams *functorParams)
 
     // Look for cross-staff situations
     // If we have one, make is available in m_crossStaff
-    DurationInterface *durElement = this->GetDurationInterface();
-    if (!durElement) return FUNCTOR_CONTINUE;
+    AttStaffident *durElement = dynamic_cast<AttStaffident *>(this);
+    if (!durElement || !this->HasAttClass(ATT_STAFFIDENT)) return FUNCTOR_CONTINUE;
 
     // If we have not @staff, set to what we had before (quite likely NULL for all non cross staff cases)
     if (!durElement->HasStaff()) {
@@ -1105,8 +1105,8 @@ int LayerElement::PrepareCrossStaffEnd(FunctorParams *functorParams)
     PrepareCrossStaffParams *params = dynamic_cast<PrepareCrossStaffParams *>(functorParams);
     assert(params);
 
-    DurationInterface *durElement = this->GetDurationInterface();
-    if (!durElement) return FUNCTOR_CONTINUE;
+    AttStaffident *durElement = dynamic_cast<AttStaffident *>(this);
+    if (!durElement || !this->HasAttClass(ATT_STAFFIDENT)) return FUNCTOR_CONTINUE;
 
     // If we have  @staff, set reset it to NULL - this can be problematic if we have different @staff attributes
     // in the the children of one element. We do not consider this now because it seems over the top

@@ -2992,6 +2992,7 @@ bool MeiInput::ReadMeiClef(Object *parent, pugi::xml_node clef)
     vrvClef->ReadColor(clef);
     vrvClef->ReadLineloc(clef);
     vrvClef->ReadOctavedisplacement(clef);
+    vrvClef->ReadStaffident(clef);
 
     parent->AddChild(vrvClef);
     return true;

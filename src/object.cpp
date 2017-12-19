@@ -1032,7 +1032,11 @@ int Object::SetCurrentScoreDef(FunctorParams *functorParams)
         Clef *clef = dynamic_cast<Clef *>(this);
         assert(clef);
         assert(params->m_currentStaffDef);
-        StaffDef *upcomingStaffDef = params->m_upcomingScoreDef->GetStaffDef(params->m_currentStaffDef->GetN());
+
+        int clefStaffN = params->m_currentStaffDef->GetN();
+        if (clef->m_crossStaff) clefStaffN = clef->m_crossStaff->GetN();
+
+        StaffDef *upcomingStaffDef = params->m_upcomingScoreDef->GetStaffDef(clefStaffN);
         assert(upcomingStaffDef);
         upcomingStaffDef->SetCurrentClef(clef);
         params->m_upcomingScoreDef->m_setAsDrawing = true;

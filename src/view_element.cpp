@@ -555,6 +555,8 @@ void View::DrawClef(DeviceContext *dc, LayerElement *element, Layer *layer, Staf
     Clef *clef = dynamic_cast<Clef *>(element);
     assert(clef);
 
+    if (clef->m_crossStaff) staff = clef->m_crossStaff;
+
     int y = staff->GetDrawingY();
     int x = element->GetDrawingX();
     int sym = 0;

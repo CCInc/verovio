@@ -26,7 +26,8 @@ class Clef : public LayerElement,
              public AttClefshape,
              public AttColor,
              public AttLineloc,
-             public AttOctavedisplacement {
+             public AttOctavedisplacement,
+             public AttStaffident {
 public:
     /**
      * @name Constructors, destructors, and other standard methods

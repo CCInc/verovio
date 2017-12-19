@@ -168,62 +168,58 @@ Clef *Layer::GetClef(LayerElement *test)
         return GetCurrentClef();
     }
 
-    // make sure list is set
-    ResetList(this);
+    // Gets all the clef changes in a measure to account for different layers and cross-staff clefs
     if (!test->Is(CLEF)) {
-        // record the original element's x position so that we don't pass it in our search for a clef
-        int origXPos = testObject->GetDrawingX();
+        // record the original element's x position because we need to make sure the clef is before that
+        int origXPos = test->GetDrawingX();
 
-        testObject = GetListFirstBackward(testObject, CLEF);
+        Staff *thisStaff = dynamic_cast<Staff *>(test->GetFirstParent(STAFF));
+        assert(thisStaff);
+        if (test->m_crossStaff) thisStaff = test->m_crossStaff;
 
-        // Get all the layers within the staff in case one of them has a clef that's not in our current layer
-        // Until there's a better way to encode duplicate clefs: see issue 400 https://github.com/rism-ch/verovio/issues/400
-        Staff *staff = dynamic_cast<Staff *>(this->GetFirstParent(STAFF));
-        assert(staff);
-        ArrayOfObjects layersInStaff;
-        AttComparison matchType(LAYER);
-        staff->FindAllChildByAttComparison(&layersInStaff, &matchType);
+        Layer *thisLayer = dynamic_cast<Layer *>(test->GetFirstParent(LAYER));
+        assert(thisLayer);
+        if (test->m_crossLayer) thisLayer = test->m_crossLayer;
 
-        // Iterate through each layer and check for clefs, and if the clef in that layer is closer than the clef we found in this layer, set it as the clef we're using
+        // get all the clefs in the current measure, we'll filter them down below
+        Measure *measure = dynamic_cast<Measure *>(this->GetFirstParent(MEASURE));
+        assert(measure);
+        ArrayOfObjects clefs;
+        AttComparison matchType(CLEF);
+        measure->FindAllChildByAttComparison(&clefs, &matchType);
+
         ArrayOfObjects::iterator iter;
-        for (iter = layersInStaff.begin(); iter != layersInStaff.end(); iter++) {
-            Layer *layer = dynamic_cast<Layer *>(*iter);
-            assert(layer);
+        for (iter = clefs.begin(); iter != clefs.end(); iter++) {
+            Clef *clef = dynamic_cast<Clef *>(*iter);
+            assert(clef);
 
-            // Use this element as a starting point to initiate the search from
-            Object *layerClosestElement = layer->GetAtPos(origXPos);
-            if (layerClosestElement)
+            if (clef && clef->Is(CLEF))
             {
-                Clef *layerClosestClef = NULL;
-                // If that element happens to be a clef, run with it
-                if (layerClosestElement->Is(CLEF))
+                // account for cross-staff clefs
+                Staff *clefStaff = dynamic_cast<Staff *>(clef->GetFirstParent(STAFF));
+                if (clef->m_crossStaff) clefStaff = clef->m_crossStaff;
+
+                Layer *clefLayer = dynamic_cast<Layer *>(clef->GetFirstParent(LAYER));
+                if (clef->m_crossLayer) clefLayer = clef->m_crossLayer;
+
+                // make sure the clef is in the same staff as the element
+                if (clefStaff->GetN() == thisStaff->GetN())
                 {
-                    layerClosestClef = dynamic_cast<Clef *>(layerClosestElement);
-                }
-                // if that closest element isn't a clef, use a reverse iterator to find the nearest clef to that element
-                else
-                {
-                    Object *layerTestObject = layer->GetListFirstBackward(layerClosestElement, CLEF);
-                    if (layerTestObject && layerTestObject->Is(CLEF))
+                    // don't check for Layers until there's a better way to account for duplicated clefs 
+                    // see issue 400 https://github.com/rism-ch/verovio/issues/400
+                    //if (clefLayer->GetN() != thisLayer->GetN()) continue;
+
+                    // We'll set this layer's clef as our clef if
+                    // 1) the new clef is closer than the the current clef (testObject)
+                    // and
+                    // 2) the new clef isn't past the original element's x position (should this be < or <=?)
+                    if ((!testObject->Is(CLEF) || clef->GetDrawingX() > testObject->GetDrawingX()) && clef->GetDrawingX() <= origXPos)
                     {
-                        layerClosestClef = dynamic_cast<Clef *>(layerTestObject);
-                    }
-                }
-                // If we found a clef in this layer
-                if (layerClosestClef && layerClosestClef->Is(CLEF))
-                {
-                    // We'll either set this layer's clef as our clef if
-                    // 1) there is no clef in our layer
-                    // 2) the clef in this layer is closer to the original element than the clef in our layer
-                    // AND the clef is still actually before the original element's position
-                    if (!(testObject && testObject->Is(CLEF)) || (layerClosestClef->GetDrawingX() > testObject->GetDrawingX() && layerClosestClef->GetDrawingX() <= origXPos))
-                    {
-                        testObject = layerClosestClef;
+                        testObject = clef;
                     }
                 }
             }
         }
-
     }
 
     if (testObject && testObject->Is(CLEF)) {
