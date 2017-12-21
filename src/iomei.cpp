@@ -2228,6 +2228,7 @@ bool MeiInput::ReadScoreDefElement(pugi::xml_node element, ScoreDefElement *obje
     SetMeiUuid(element, object);
     object->ReadCommon(element);
     object->ReadTyped(element);
+    object->ReadTimebase(element);
 
     return true;
 }

@@ -412,13 +412,33 @@ int LayerElement::GetDrawingBottom(Doc *doc, int staffSize, bool withArtic, Arti
     return this->GetDrawingY();
 }
 
-double LayerElement::GetAlignmentDuration(Mensur *mensur, MeterSig *meterSig, bool notGraceOnly)
+double LayerElement::GetAlignmentDuration(Mensur *mensur, MeterSig *meterSig, bool notGraceOnly, Doc *doc)
 {
     if (this->IsGraceNote() && notGraceOnly) {
         return 0.0;
     }
 
     if (this->HasInterface(INTERFACE_DURATION)) {
+        DurationInterface *duration = this->GetDurationInterface();
+        assert(duration);
+
+        // Since spaces don't have to conform to durations like rests or notes do,
+        // many spaces can't fit into a data_DURATION
+        // so if the space has an alternative PPQ duration, use that instead
+        if (this->Is(SPACE) && duration->HasDurPPQ())
+        {
+            // only support scoreDef ppq for now
+            if (doc)
+            {
+                if (doc->m_scoreDef.HasPpq())
+                {
+                    int ppq = doc->m_scoreDef.GetPpq();
+                    double note_dur = (duration->GetDurPPQ() / (ppq * 4)) * DUR_MAX;
+                    return note_dur;
+                }
+            }
+        }
+
         int num = 1;
         int numbase = 1;
         Tuplet *tuplet = dynamic_cast<Tuplet *>(this->GetFirstParent(TUPLET, MAX_TUPLET_DEPTH));
@@ -429,8 +449,6 @@ double LayerElement::GetAlignmentDuration(Mensur *mensur, MeterSig *meterSig, bo
             if (num == 0) num = 1;
             if (numbase == 0) numbase = 1;
         }
-        DurationInterface *duration = this->GetDurationInterface();
-        assert(duration);
         if (duration->IsMensural()) {
             return duration->GetInterfaceAlignmentMensuralDuration(num, numbase, mensur);
         }
@@ -619,7 +637,7 @@ int LayerElement::AlignHorizontally(FunctorParams *functorParams)
     // We have already an alignment with grace note children - skip this
     if (!m_alignment) {
         // get the duration of the event
-        duration = this->GetAlignmentDuration(params->m_currentMensur, params->m_currentMeterSig);
+        duration = this->GetAlignmentDuration(params->m_currentMensur, params->m_currentMeterSig, true, params->m_doc);
 
         // For timestamp, what we get from GetAlignmentDuration is actually the position of the timestamp
         // So use it as current time - we can do this because the timestamp loop is redirected from the measure

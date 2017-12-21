@@ -363,7 +363,7 @@ public:
 
 class AlignHorizontallyParams : public FunctorParams {
 public:
-    AlignHorizontallyParams(Functor *functor)
+    AlignHorizontallyParams(Doc *doc, Functor *functor)
     {
         m_measureAligner = NULL;
         m_time = 0.0;
@@ -373,6 +373,7 @@ public:
         m_scoreDefRole = NONE;
         m_isFirstMeasure = false;
         m_hasMultipleLayer = false;
+        m_doc = doc;
     }
     MeasureAligner *m_measureAligner;
     double m_time;
@@ -382,6 +383,7 @@ public:
     ElementScoreDefRole m_scoreDefRole;
     bool m_isFirstMeasure;
     bool m_hasMultipleLayer;
+    Doc *m_doc;
 };
 
 //----------------------------------------------------------------------------

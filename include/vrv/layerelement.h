@@ -158,7 +158,7 @@ public:
     /**
      * Returns the duration if the child element has a DurationInterface
      */
-    double GetAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true);
+    double GetAlignmentDuration(Mensur *mensur = NULL, MeterSig *meterSig = NULL, bool notGraceOnly = true, Doc *doc = NULL);
 
     //----------//
     // Functors //

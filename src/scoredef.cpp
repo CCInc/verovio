@@ -28,11 +28,12 @@ namespace vrv {
 // ScoreDefElement
 //----------------------------------------------------------------------------
 
-ScoreDefElement::ScoreDefElement(std::string classid) : Object(classid), ScoreDefInterface(), AttCommon(), AttTyped()
+ScoreDefElement::ScoreDefElement(std::string classid) : Object(classid), ScoreDefInterface(), AttCommon(), AttTyped(), AttTimebase()
 {
     RegisterInterface(ScoreDefInterface::GetAttClasses(), ScoreDefInterface::IsInterface());
     RegisterAttClass(ATT_COMMON);
     RegisterAttClass(ATT_TYPED);
+    RegisterAttClass(ATT_TIMEBASE);
 
     Reset();
 }

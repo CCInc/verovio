@@ -208,6 +208,25 @@ data_DURATION Att::StrToDuration(std::string value) const
     return DURATION_NONE;
 }
 
+std::string Att::PPQToStr(double data) const
+{
+    std::stringstream sstm;
+    sstm << data << "p";
+
+    return sstm.str();;
+}
+
+double Att::StrToPPQ(std::string value) const
+{
+    if ((value.length() > 0) && (value[value.length() - 1] == 'p')) {
+        return atof(value.substr(0, value.length() - 1).c_str());
+    }
+    else {
+        LogWarning("Unknown dur ppq '%s'", value.c_str());
+    }
+    return -1;
+}
+
 std::string Att::KeysignatureToStr(data_KEYSIGNATURE data) const
 {
     std::string value;

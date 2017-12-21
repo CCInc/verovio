@@ -1997,6 +1997,7 @@ AttDurationPerformed::~AttDurationPerformed()
 void AttDurationPerformed::ResetDurationPerformed()
 {
     m_durGes = DURATION_NONE;
+    m_durPPQ = -1;
 }
 
 bool AttDurationPerformed::ReadDurationPerformed(pugi::xml_node element)
@@ -2004,6 +2005,7 @@ bool AttDurationPerformed::ReadDurationPerformed(pugi::xml_node element)
     bool hasAttribute = false;
     if (element.attribute("dur.ges")) {
         this->SetDurGes(StrToDuration(element.attribute("dur.ges").value()));
+        this->SetDurPPQ(StrToPPQ(element.attribute("dur.ges").value()));
         element.remove_attribute("dur.ges");
         hasAttribute = true;
     }
@@ -2013,7 +2015,12 @@ bool AttDurationPerformed::ReadDurationPerformed(pugi::xml_node element)
 bool AttDurationPerformed::WriteDurationPerformed(pugi::xml_node element)
 {
     bool wroteAttribute = false;
-    if (this->HasDurGes()) {
+    if (this->HasDurPPQ())
+    {
+        element.append_attribute("dur.ges") = PPQToStr(this->GetDurPPQ()).c_str();
+        wroteAttribute = true;
+    }
+    else if (this->HasDurGes()) {
         element.append_attribute("dur.ges") = DurationToStr(this->GetDurGes()).c_str();
         wroteAttribute = true;
     }
@@ -2023,6 +2030,11 @@ bool AttDurationPerformed::WriteDurationPerformed(pugi::xml_node element)
 bool AttDurationPerformed::HasDurGes() const
 {
     return (m_durGes != DURATION_NONE);
+}
+
+bool AttDurationPerformed::HasDurPPQ() const
+{
+    return (m_durGes != 0);
 }
 
 /* include <attdur.ges> */
@@ -8886,6 +8898,7 @@ bool Att::SetShared(Object *element, std::string attrType, std::string attrValue
         assert(att);
         if (attrType == "dur.ges") {
             att->SetDurGes(att->StrToDuration(attrValue));
+            att->SetDurPPQ(att->StrToPPQ(attrValue));
             return true;
         }
     }
@@ -10464,7 +10477,11 @@ void Att::GetShared(const Object *element, ArrayOfStrAttr *attributes)
     if (element->HasAttClass(ATT_DURATIONPERFORMED)) {
         const AttDurationPerformed *att = dynamic_cast<const AttDurationPerformed *>(element);
         assert(att);
-        if (att->HasDurGes()) {
+        if (att->HasDurPPQ())
+        {
+            attributes->push_back(std::make_pair("dur.ges", att->PPQToStr(att->GetDurPPQ())));
+        }
+        else if (att->HasDurGes()) {
             attributes->push_back(std::make_pair("dur.ges", att->DurationToStr(att->GetDurGes())));
         }
     }

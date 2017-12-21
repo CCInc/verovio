@@ -1554,6 +1554,12 @@ public:
     bool HasDurGes() const;
     ///@}
 
+    ///@{
+    void SetDurPPQ(double durGes_) { m_durPPQ = durGes_; }
+    double GetDurPPQ() const { return m_durPPQ; }
+    bool HasDurPPQ() const;
+    ///@}
+
 private:
     /**
      * Records performed duration information that differs from the written duration.
@@ -1562,6 +1568,8 @@ private:
      * duration values.
      **/
     data_DURATION m_durGes;
+
+    double m_durPPQ;
 
     /* include <attdur.ges> */
 };

@@ -36,7 +36,7 @@ class StaffDef;
  * information about clef, key signature, etc. This information can be either
  * attributes (implemented) of the ScoreDefInterface or elements (not implemented).
  */
-class ScoreDefElement : public Object, public ScoreDefInterface, public AttCommon, public AttTyped {
+class ScoreDefElement : public Object, public ScoreDefInterface, public AttCommon, public AttTyped, public AttTimebase {
 public:
     /**
      * @name Constructors, destructors, and other standard methods.
