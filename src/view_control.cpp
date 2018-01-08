@@ -1985,7 +1985,7 @@ void View::DrawTempo(DeviceContext *dc, Tempo *tempo, Measure *measure, System *
     FontInfo tempoTxt;
 
     // If we have not timestamp
-    int x = measure->GetDrawingX();
+    int x = tempo->GetStart()->GetDrawingX();
     // First try to see if we have a meter sig attribute for this measure
     MeasureAlignerTypeComparison alignmentComparison(ALIGNMENT_SCOREDEF_METERSIG);
     Alignment *pos
